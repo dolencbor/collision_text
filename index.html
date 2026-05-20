@@ -178,6 +178,13 @@
       fill: #000;
     }
 
+    .clearance-text,
+    .clearance-obstacle {
+      fill: var(--paper);
+      stroke: var(--paper);
+      stroke-linejoin: round;
+    }
+
     .main-text,
     .grid-text {
       font-family: Arial Black, Arial, Helvetica, sans-serif;
@@ -354,6 +361,7 @@
         </defs>
         <rect class="poster-bg" width="760" height="960"></rect>
         <g id="gridLayer" clip-path="url(#posterClip)"></g>
+        <g id="clearanceLayer"></g>
         <g id="debugLayer"></g>
         <g id="mainLayer"></g>
         <g id="shapeLayer"></g>
@@ -400,6 +408,7 @@
       count: document.querySelector("#count"),
       svg: document.querySelector("#posterSvg"),
       gridLayer: document.querySelector("#gridLayer"),
+      clearanceLayer: document.querySelector("#clearanceLayer"),
       debugLayer: document.querySelector("#debugLayer"),
       mainLayer: document.querySelector("#mainLayer"),
       shapeLayer: document.querySelector("#shapeLayer")
@@ -563,6 +572,35 @@
         text.textContent = item.text;
         els.mainLayer.appendChild(text);
       });
+    }
+
+    function renderClearance(layout, outlinePx) {
+      clear(els.clearanceLayer);
+      const strokeWidth = Math.max(0, outlinePx * 2);
+
+      layout.forEach((item) => {
+        const text = svgEl("text", {
+          class: "clearance-text",
+          x: item.x.toFixed(2),
+          y: item.y.toFixed(2),
+          "font-size": item.size.toFixed(2),
+          "stroke-width": strokeWidth.toFixed(2)
+        });
+        text.textContent = item.text;
+        els.clearanceLayer.appendChild(text);
+      });
+
+      const obstacle = shapeObstacle();
+      els.clearanceLayer.appendChild(svgEl("rect", {
+        class: "clearance-obstacle",
+        x: obstacle.x,
+        y: obstacle.y,
+        width: obstacle.width,
+        height: obstacle.height,
+        rx: obstacle.radius,
+        ry: obstacle.radius,
+        "stroke-width": strokeWidth.toFixed(2)
+      }));
     }
 
     function renderObstacle() {
@@ -873,6 +911,7 @@
       updateReadouts();
       const layout = buildMainLayout(els.mainText.value);
       renderMain(layout);
+      renderClearance(layout, numberValue(els.outlinePx));
       renderObstacle();
       const obstacle = shapeObstacle();
       repelCenters = layout.map((item) => ({
