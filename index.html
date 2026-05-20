@@ -173,37 +173,22 @@
     }
 
     .main-text,
-    .grid-text,
-    .svg-obstacle {
-      fill: #000;
-    }
-
-    .clearance-text,
-    .clearance-obstacle {
-      fill: var(--paper);
-      stroke: var(--paper);
-      stroke-linejoin: round;
-    }
-
-    .main-text,
     .grid-text {
+      fill: #000;
       font-family: Arial Black, Arial, Helvetica, sans-serif;
       font-weight: 900;
       letter-spacing: 0;
       dominant-baseline: alphabetic;
     }
 
-    .grid-text {
-      will-change: transform;
+    .clearance-mask,
+    .debug-mask {
+      image-rendering: auto;
     }
 
     .debug-mask {
       opacity: 0.12;
       image-rendering: pixelated;
-    }
-
-    .clearance-mask {
-      image-rendering: auto;
     }
 
     @media (max-width: 860px) {
@@ -239,16 +224,16 @@
     <div class="control">
       <label for="mainScale">Main text scale</label>
       <div class="range-row">
-        <input id="mainScale" type="range" min="70" max="135" value="105">
-        <output id="mainScaleValue" class="value">105%</output>
+        <input id="mainScale" type="range" min="65" max="125" value="92">
+        <output id="mainScaleValue" class="value">92%</output>
       </div>
     </div>
 
     <div class="control">
-      <label for="outlinePx">Invisible outline</label>
+      <label for="outlinePx">Collision outline</label>
       <div class="range-row">
-        <input id="outlinePx" type="range" min="0" max="90" value="24">
-        <output id="outlineValue" class="value">24px</output>
+        <input id="outlinePx" type="range" min="0" max="90" value="30">
+        <output id="outlineValue" class="value">30px</output>
       </div>
     </div>
 
@@ -270,32 +255,32 @@
     <div class="control">
       <label for="gridSize">Grid text size</label>
       <div class="range-row">
-        <input id="gridSize" type="range" min="28" max="96" value="58">
-        <output id="gridSizeValue" class="value">58px</output>
+        <input id="gridSize" type="range" min="28" max="96" value="56">
+        <output id="gridSizeValue" class="value">56px</output>
       </div>
     </div>
 
     <div class="control">
       <label for="columnGap">Horizontal tiling</label>
       <div class="range-row">
-        <input id="columnGap" type="range" min="-20" max="180" value="42">
-        <output id="columnGapValue" class="value">42px</output>
+        <input id="columnGap" type="range" min="-20" max="180" value="44">
+        <output id="columnGapValue" class="value">44px</output>
       </div>
     </div>
 
     <div class="control">
       <label for="rowGap">Vertical tiling</label>
       <div class="range-row">
-        <input id="rowGap" type="range" min="-10" max="80" value="8">
-        <output id="rowGapValue" class="value">8px</output>
+        <input id="rowGap" type="range" min="-10" max="80" value="7">
+        <output id="rowGapValue" class="value">7px</output>
       </div>
     </div>
 
     <div class="control">
       <label for="gridSpeed">Left drift speed</label>
       <div class="range-row">
-        <input id="gridSpeed" type="range" min="0" max="90" value="12">
-        <output id="gridSpeedValue" class="value">12</output>
+        <input id="gridSpeed" type="range" min="0" max="90" value="14">
+        <output id="gridSpeedValue" class="value">14</output>
       </div>
     </div>
 
@@ -304,40 +289,32 @@
     <div class="control">
       <label for="floatAmount">Float amount</label>
       <div class="range-row">
-        <input id="floatAmount" type="range" min="0" max="32" value="7">
-        <output id="floatAmountValue" class="value">7px</output>
+        <input id="floatAmount" type="range" min="0" max="28" value="3">
+        <output id="floatAmountValue" class="value">3px</output>
       </div>
     </div>
 
     <div class="control">
       <label for="floatSpeed">Float speed</label>
       <div class="range-row">
-        <input id="floatSpeed" type="range" min="0" max="120" value="28">
-        <output id="floatSpeedValue" class="value">28</output>
+        <input id="floatSpeed" type="range" min="0" max="120" value="22">
+        <output id="floatSpeedValue" class="value">22</output>
       </div>
     </div>
 
     <div class="control">
-      <label for="maskStrength">Headline collision</label>
+      <label for="dodgeRange">Collision push</label>
       <div class="range-row">
-        <input id="maskStrength" type="range" min="0" max="100" value="54">
-        <output id="maskStrengthValue" class="value">54</output>
+        <input id="dodgeRange" type="range" min="0" max="260" value="120">
+        <output id="dodgeRangeValue" class="value">120</output>
       </div>
     </div>
 
     <div class="control">
-      <label for="wordStrength">Word collision</label>
+      <label for="wordGap">Word collision gap</label>
       <div class="range-row">
-        <input id="wordStrength" type="range" min="0" max="100" value="32">
-        <output id="wordStrengthValue" class="value">32</output>
-      </div>
-    </div>
-
-    <div class="control">
-      <label for="returnStrength">Grid pull</label>
-      <div class="range-row">
-        <input id="returnStrength" type="range" min="0" max="100" value="46">
-        <output id="returnStrengthValue" class="value">46</output>
+        <input id="wordGap" type="range" min="0" max="40" value="6">
+        <output id="wordGapValue" class="value">6px</output>
       </div>
     </div>
 
@@ -368,7 +345,6 @@
         <g id="clearanceLayer"></g>
         <g id="debugLayer"></g>
         <g id="mainLayer"></g>
-        <g id="shapeLayer"></g>
       </g>
     </svg>
   </main>
@@ -378,6 +354,7 @@
     const POSTER = { width: 760, height: 960 };
     const SCALE = 2;
     const FONT_STACK = "Arial Black, Arial, Helvetica, sans-serif";
+    const PAPER = [244, 243, 241];
 
     const els = {
       mainText: document.querySelector("#mainText"),
@@ -400,12 +377,10 @@
       floatAmountValue: document.querySelector("#floatAmountValue"),
       floatSpeed: document.querySelector("#floatSpeed"),
       floatSpeedValue: document.querySelector("#floatSpeedValue"),
-      maskStrength: document.querySelector("#maskStrength"),
-      maskStrengthValue: document.querySelector("#maskStrengthValue"),
-      wordStrength: document.querySelector("#wordStrength"),
-      wordStrengthValue: document.querySelector("#wordStrengthValue"),
-      returnStrength: document.querySelector("#returnStrength"),
-      returnStrengthValue: document.querySelector("#returnStrengthValue"),
+      dodgeRange: document.querySelector("#dodgeRange"),
+      dodgeRangeValue: document.querySelector("#dodgeRangeValue"),
+      wordGap: document.querySelector("#wordGap"),
+      wordGapValue: document.querySelector("#wordGapValue"),
       showMask: document.querySelector("#showMask"),
       resetMotion: document.querySelector("#resetMotion"),
       exportSvg: document.querySelector("#exportSvg"),
@@ -414,8 +389,7 @@
       gridLayer: document.querySelector("#gridLayer"),
       clearanceLayer: document.querySelector("#clearanceLayer"),
       debugLayer: document.querySelector("#debugLayer"),
-      mainLayer: document.querySelector("#mainLayer"),
-      shapeLayer: document.querySelector("#shapeLayer")
+      mainLayer: document.querySelector("#mainLayer")
     };
 
     const measureCanvas = document.createElement("canvas");
@@ -430,10 +404,9 @@
     clearanceCanvas.width = maskCanvas.width;
     clearanceCanvas.height = maskCanvas.height;
 
-    let particles = [];
-    let maskData = null;
-    let repelCenters = [];
-    let layoutSignature = "";
+    let tiles = [];
+    let mainLayout = [];
+    let gridSignatureValue = "";
     let gridOffset = 0;
     let lastFrame = performance.now();
 
@@ -451,12 +424,12 @@
       return Math.max(min, Math.min(max, value));
     }
 
-    function font(size) {
-      return `900 ${size}px ${FONT_STACK}`;
-    }
-
     function numberValue(element) {
       return Number(element.value);
+    }
+
+    function font(size) {
+      return `900 ${size}px ${FONT_STACK}`;
     }
 
     function normalizeLines(text) {
@@ -488,41 +461,20 @@
     function buildMainLayout(text) {
       const lines = normalizeLines(text).slice(0, 5);
       const scale = numberValue(els.mainScale) / 100;
-      const bottomReserve = 164;
-      const topPad = 68;
-      const sidePad = 32;
-      const availableHeight = POSTER.height - topPad - bottomReserve;
+      const topPad = 86;
+      const bottomPad = 98;
+      const sidePad = 40;
+      const availableHeight = POSTER.height - topPad - bottomPad;
       const band = availableHeight / lines.length;
 
       return lines.map((line, index) => {
-        const fitted = fitSize(line, POSTER.width - sidePad * 2, band * 1.05, 285);
+        const fitted = fitSize(line, POSTER.width - sidePad * 2, band * 0.98, 250);
         const size = fitted * scale;
         const metrics = metricsFor(line, size);
         const x = (POSTER.width - metrics.width) / 2;
-        const y = topPad + band * index + band * 0.74;
+        const y = topPad + band * index + band * 0.7;
         return { text: line, x, y, size, metrics };
       });
-    }
-
-    function shapeObstacle() {
-      return {
-        x: 48,
-        y: 806,
-        width: 664,
-        height: 92,
-        radius: 46
-      };
-    }
-
-    function drawRoundRect(ctx, x, y, width, height, radius) {
-      const r = Math.min(radius, width / 2, height / 2);
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + width, y, x + width, y + height, r);
-      ctx.arcTo(x + width, y + height, x, y + height, r);
-      ctx.arcTo(x, y + height, x, y, r);
-      ctx.arcTo(x, y, x + width, y, r);
-      ctx.closePath();
     }
 
     function drawMainTextToContext(ctx, layout, outlinePx) {
@@ -546,17 +498,6 @@
         ctx.font = font(item.size);
         offsets.forEach(([dx, dy]) => ctx.fillText(item.text, item.x + dx, item.y + dy));
       });
-
-      const obstacle = shapeObstacle();
-      drawRoundRect(
-        ctx,
-        obstacle.x - radius,
-        obstacle.y - radius,
-        obstacle.width + radius * 2,
-        obstacle.height + radius * 2,
-        obstacle.radius + radius
-      );
-      ctx.fill();
     }
 
     function closeMaskHoles(imageData) {
@@ -609,14 +550,13 @@
     }
 
     function updateClearanceCanvas(imageData) {
-      const paper = [244, 243, 241];
       const clearance = clearanceCtx.createImageData(imageData.width, imageData.height);
 
       for (let i = 0; i < imageData.data.length; i += 4) {
         if (imageData.data[i + 3] <= 12) continue;
-        clearance.data[i] = paper[0];
-        clearance.data[i + 1] = paper[1];
-        clearance.data[i + 2] = paper[2];
+        clearance.data[i] = PAPER[0];
+        clearance.data[i + 1] = PAPER[1];
+        clearance.data[i + 2] = PAPER[2];
         clearance.data[i + 3] = 255;
       }
 
@@ -662,20 +602,6 @@
       }));
     }
 
-    function renderObstacle() {
-      clear(els.shapeLayer);
-      const obstacle = shapeObstacle();
-      els.shapeLayer.appendChild(svgEl("rect", {
-        class: "svg-obstacle",
-        x: obstacle.x,
-        y: obstacle.y,
-        width: obstacle.width,
-        height: obstacle.height,
-        rx: obstacle.radius,
-        ry: obstacle.radius
-      }));
-    }
-
     function renderDebugMask(show) {
       clear(els.debugLayer);
       if (!show) return;
@@ -689,266 +615,129 @@
       }));
     }
 
-    function textBox(text, size, x, y) {
-      const metrics = metricsFor(text, size);
-      return {
-        left: x - metrics.left,
-        top: y - metrics.ascent,
-        right: x + metrics.right,
-        bottom: y + metrics.descent,
-        width: metrics.width,
-        height: metrics.ascent + metrics.descent
-      };
-    }
-
-    function makeParticle(row, col, x, y, size, text, phase) {
-      const metrics = metricsFor(text, size);
-      const node = svgEl("text", {
-        class: "grid-text",
-        "font-size": size.toFixed(2)
-      });
-      node.textContent = text;
-      els.gridLayer.appendChild(node);
-
-      return {
-        row,
-        col,
-        x,
-        y,
-        vx: 0,
-        vy: 0,
-        targetX: x,
-        targetY: y,
-        size,
-        text,
-        metrics,
-        node,
-        phase
-      };
-    }
-
-    function rebuildGrid() {
-      clear(els.gridLayer);
-      particles = [];
-      gridOffset = 0;
-
-      const text = els.gridText.value.trim().toUpperCase() || "INDIGO 2026";
-      const size = numberValue(els.gridSize);
-      const metrics = metricsFor(text, size);
-      const cellW = Math.max(metrics.width + numberValue(els.columnGap), 80);
-      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap), 20);
-      const rows = Math.ceil((POSTER.height + cellH * 2) / cellH);
-      const cols = Math.ceil((POSTER.width + cellW * 3) / cellW);
-
-      for (let row = -1; row < rows; row += 1) {
-        for (let col = -1; col < cols; col += 1) {
-          const x = col * cellW + 8;
-          const y = row * cellH + metrics.ascent + 4;
-          const phase = (row * 1.79 + col * 0.93) % (Math.PI * 2);
-          particles.push(makeParticle(row, col, x, y, size, text, phase));
-        }
-      }
-
-      layoutSignature = gridSignature();
-    }
-
     function gridSignature() {
       return [
         els.gridText.value,
         els.gridSize.value,
         els.columnGap.value,
-        els.rowGap.value
+        els.rowGap.value,
+        els.wordGap.value
       ].join("|");
     }
 
-    function buildBoxForParticle(particle, x = particle.x, y = particle.y) {
-      return {
-        left: x - particle.metrics.left,
-        top: y - particle.metrics.ascent,
-        right: x + particle.metrics.right,
-        bottom: y + particle.metrics.descent,
-        width: particle.metrics.width,
-        height: particle.metrics.ascent + particle.metrics.descent
-      };
-    }
+    function rebuildGrid() {
+      clear(els.gridLayer);
+      tiles = [];
+      gridOffset = 0;
 
-    function maskForce(box) {
-      if (!maskData) return { x: 0, y: 0, hits: 0 };
-
-      const samplesX = 5;
-      const samplesY = 4;
-      const centerX = (box.left + box.right) / 2;
-      const centerY = (box.top + box.bottom) / 2;
-      const stride = maskCanvas.width * 4;
-      let forceX = 0;
-      let forceY = 0;
-      let hits = 0;
-
-      for (let ix = 0; ix < samplesX; ix += 1) {
-        const x = box.left + (box.width * ix) / Math.max(1, samplesX - 1);
-        if (x < 0 || x >= POSTER.width) continue;
-        for (let iy = 0; iy < samplesY; iy += 1) {
-          const y = box.top + (box.height * iy) / Math.max(1, samplesY - 1);
-          if (y < 0 || y >= POSTER.height) continue;
-
-          const pixelX = clamp(Math.round(x * SCALE), 0, maskCanvas.width - 1);
-          const pixelY = clamp(Math.round(y * SCALE), 0, maskCanvas.height - 1);
-          const alpha = maskData[pixelY * stride + pixelX * 4 + 3];
-          if (alpha <= 12) continue;
-
-          const dx = centerX - x;
-          const dy = centerY - y;
-          const length = Math.hypot(dx, dy) || 1;
-          forceX += dx / length;
-          forceY += dy / length;
-          hits += 1;
-        }
-      }
-
-      if (hits > 0 && repelCenters.length > 0) {
-        let nearest = repelCenters[0];
-        let nearestDistance = Infinity;
-
-        repelCenters.forEach((center) => {
-          const distance = Math.hypot(centerX - center.x, centerY - center.y);
-          if (distance < nearestDistance) {
-            nearest = center;
-            nearestDistance = distance;
-          }
-        });
-
-        const awayX = centerX - nearest.x;
-        const awayY = centerY - nearest.y;
-        const length = Math.hypot(awayX, awayY) || 1;
-        forceX += (awayX / length) * hits * 0.7;
-        forceY += (awayY / length) * hits * 0.7;
-      }
-
-      return { x: forceX, y: forceY, hits };
-    }
-
-    function boxesOverlap(a, b) {
-      return !(
-        a.right < b.left ||
-        a.left > b.right ||
-        a.bottom < b.top ||
-        a.top > b.bottom
-      );
-    }
-
-    function applyPairCollisions(dt, strength) {
-      if (strength <= 0) return;
-      const padded = particles.map((particle) => {
-        const box = buildBoxForParticle(particle);
-        return {
-          particle,
-          box: {
-            left: box.left - 2,
-            top: box.top - 2,
-            right: box.right + 2,
-            bottom: box.bottom + 2,
-            width: box.width + 4,
-            height: box.height + 4
-          }
-        };
-      });
-
-      for (let i = 0; i < padded.length; i += 1) {
-        for (let j = i + 1; j < padded.length; j += 1) {
-          const a = padded[i];
-          const b = padded[j];
-          if (!boxesOverlap(a.box, b.box)) continue;
-
-          const ax = (a.box.left + a.box.right) / 2;
-          const ay = (a.box.top + a.box.bottom) / 2;
-          const bx = (b.box.left + b.box.right) / 2;
-          const by = (b.box.top + b.box.bottom) / 2;
-          const overlapX = Math.min(a.box.right - b.box.left, b.box.right - a.box.left);
-          const overlapY = Math.min(a.box.bottom - b.box.top, b.box.bottom - a.box.top);
-          const push = Math.min(overlapX, overlapY) * strength * dt * 0.012;
-
-          if (overlapX < overlapY) {
-            const dir = ax < bx ? -1 : 1;
-            a.particle.vx += dir * push;
-            b.particle.vx -= dir * push;
-          } else {
-            const dir = ay < by ? -1 : 1;
-            a.particle.vy += dir * push;
-            b.particle.vy -= dir * push;
-          }
-        }
-      }
-    }
-
-    function updateTargets(time) {
       const text = els.gridText.value.trim().toUpperCase() || "INDIGO 2026";
       const size = numberValue(els.gridSize);
       const metrics = metricsFor(text, size);
-      const cellW = Math.max(metrics.width + numberValue(els.columnGap), 80);
-      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap), 20);
+      const wordGap = numberValue(els.wordGap);
+      const cellW = Math.max(metrics.width + numberValue(els.columnGap) + wordGap, 80);
+      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap) + wordGap, 20);
+      const rows = Math.ceil((POSTER.height + cellH) / cellH);
+      const cols = Math.ceil((POSTER.width + cellW * 2) / cellW);
+
+      for (let row = 0; row < rows; row += 1) {
+        for (let col = -1; col < cols; col += 1) {
+          const node = svgEl("text", {
+            class: "grid-text",
+            "font-size": size.toFixed(2)
+          });
+          node.textContent = text;
+          els.gridLayer.appendChild(node);
+          tiles.push({
+            row,
+            col,
+            node,
+            size,
+            text,
+            metrics,
+            phase: row * 1.73 + col * 0.91
+          });
+        }
+      }
+
+      gridSignatureValue = gridSignature();
+    }
+
+    function pushFromHeadline(x, y) {
+      const range = numberValue(els.dodgeRange);
+      if (range <= 0 || mainLayout.length === 0) return { x, y };
+
+      let pushX = 0;
+      let pushY = 0;
+      const maxPush = Math.min(26, range * 0.11);
+
+      mainLayout.forEach((item) => {
+        const box = {
+          left: item.x - numberValue(els.outlinePx),
+          right: item.x + item.metrics.width + numberValue(els.outlinePx),
+          top: item.y - item.metrics.ascent - numberValue(els.outlinePx),
+          bottom: item.y + item.metrics.descent + numberValue(els.outlinePx)
+        };
+        const nearestX = clamp(x, box.left, box.right);
+        const nearestY = clamp(y, box.top, box.bottom);
+        const dx = x - nearestX;
+        const dy = y - nearestY;
+        const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+        const influence = clamp(1 - distance / range, 0, 1);
+
+        if (influence > 0) {
+          const sideX = x < (box.left + box.right) / 2 ? -1 : 1;
+          const sideY = y < (box.top + box.bottom) / 2 ? -1 : 1;
+          const nx = Math.abs(dx) > 0.01 ? dx / distance : sideX * 0.35;
+          const ny = Math.abs(dy) > 0.01 ? dy / distance : sideY * 0.35;
+          pushX += nx * influence * maxPush;
+          pushY += ny * influence * maxPush * 0.45;
+        }
+      });
+
+      return { x: x + pushX, y: y + pushY };
+    }
+
+    function layoutGrid(time) {
+      if (gridSignatureValue !== gridSignature()) rebuildGrid();
+
+      const text = els.gridText.value.trim().toUpperCase() || "INDIGO 2026";
+      const size = numberValue(els.gridSize);
+      const metrics = metricsFor(text, size);
+      const wordGap = numberValue(els.wordGap);
+      const edgePx = numberValue(els.edgePx);
+      const cellW = Math.max(metrics.width + numberValue(els.columnGap) + wordGap, 80);
+      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap) + wordGap, 20);
       const floatAmount = numberValue(els.floatAmount);
       const floatSpeed = numberValue(els.floatSpeed) * 0.001;
-      const waveTime = time * floatSpeed;
+      const wave = time * floatSpeed;
+      let visibleCount = 0;
 
-      particles.forEach((particle) => {
-        const rawX = particle.col * cellW + 8 - gridOffset;
-        const wrappedX = ((rawX + cellW * 2) % (cellW * (Math.ceil((POSTER.width + cellW * 3) / cellW)))) - cellW;
-        const baseY = particle.row * cellH + metrics.ascent + 4;
-        particle.targetX = wrappedX + Math.sin(waveTime + particle.phase) * floatAmount;
-        particle.targetY = baseY + Math.cos(waveTime * 0.82 + particle.phase * 1.31) * floatAmount * 0.6;
-      });
-    }
+      tiles.forEach((tile) => {
+        tile.size = size;
+        tile.text = text;
+        tile.metrics = metrics;
+        tile.node.textContent = text;
+        tile.node.setAttribute("font-size", size.toFixed(2));
 
-    function stepPhysics(time, dt) {
-      const speed = numberValue(els.gridSpeed);
-      const text = els.gridText.value.trim().toUpperCase() || "INDIGO 2026";
-      const size = numberValue(els.gridSize);
-      const metrics = metricsFor(text, size);
-      const cellW = Math.max(metrics.width + numberValue(els.columnGap), 80);
-      const returnStrength = numberValue(els.returnStrength) / 100;
-      const maskStrength = numberValue(els.maskStrength) / 100;
-      const wordStrength = numberValue(els.wordStrength);
-      const edgePx = numberValue(els.edgePx);
+        const wrappedX = tile.col * cellW + edgePx - gridOffset;
+        const baseY = tile.row * cellH + metrics.ascent + edgePx;
+        const anchorX = wrappedX + Math.sin(wave + tile.phase) * floatAmount;
+        const anchorY = baseY + Math.cos(wave * 0.78 + tile.phase * 1.23) * floatAmount * 0.55;
+        const pushed = pushFromHeadline(anchorX + metrics.width / 2, anchorY - metrics.ascent / 2);
+        const x = anchorX + (pushed.x - (anchorX + metrics.width / 2));
+        const y = anchorY + (pushed.y - (anchorY - metrics.ascent / 2));
+        const visible = y > -cellH && y < POSTER.height + cellH;
 
-      gridOffset = (gridOffset + speed * dt) % cellW;
-      updateTargets(time);
+        tile.node.setAttribute("x", x.toFixed(2));
+        tile.node.setAttribute("y", y.toFixed(2));
+        tile.node.style.display = visible ? "" : "none";
 
-      particles.forEach((particle) => {
-        const box = buildBoxForParticle(particle);
-        const mask = maskForce(box);
-        const anchorX = (particle.targetX - particle.x) * returnStrength * 4.8;
-        const anchorY = (particle.targetY - particle.y) * returnStrength * 4.8;
-        let forceX = anchorX + mask.x * mask.hits * maskStrength * 42;
-        let forceY = anchorY + mask.y * mask.hits * maskStrength * 42;
-
-        if (box.left < edgePx) forceX += (edgePx - box.left) * 2.6;
-        if (box.right > POSTER.width - edgePx) forceX -= (box.right - (POSTER.width - edgePx)) * 2.6;
-        if (box.top < edgePx) forceY += (edgePx - box.top) * 2.6;
-        if (box.bottom > POSTER.height - edgePx) forceY -= (box.bottom - (POSTER.height - edgePx)) * 2.6;
-
-        particle.vx = (particle.vx + forceX * dt) * 0.82;
-        particle.vy = (particle.vy + forceY * dt) * 0.82;
-      });
-
-      applyPairCollisions(dt, wordStrength);
-
-      particles.forEach((particle) => {
-        particle.x += particle.vx * dt;
-        particle.y += particle.vy * dt;
-
-        const box = buildBoxForParticle(particle);
-        const margin = Math.max(140, box.width);
-        if (box.right < -margin) {
-          particle.x += cellW * Math.ceil((POSTER.width + cellW * 3) / cellW);
-          particle.vx = 0;
-        } else if (box.left > POSTER.width + margin) {
-          particle.x -= cellW * Math.ceil((POSTER.width + cellW * 3) / cellW);
-          particle.vx = 0;
+        if (visible) {
+          visibleCount += 1;
         }
-
-        particle.node.setAttribute("x", particle.x.toFixed(2));
-        particle.node.setAttribute("y", particle.y.toFixed(2));
       });
+
+      els.count.textContent = `${visibleCount} grid words moving behind the editable collision outline`;
     }
 
     function updateReadouts() {
@@ -961,29 +750,18 @@
       els.gridSpeedValue.textContent = els.gridSpeed.value;
       els.floatAmountValue.textContent = `${els.floatAmount.value}px`;
       els.floatSpeedValue.textContent = els.floatSpeed.value;
-      els.maskStrengthValue.textContent = els.maskStrength.value;
-      els.wordStrengthValue.textContent = els.wordStrength.value;
-      els.returnStrengthValue.textContent = els.returnStrength.value;
+      els.dodgeRangeValue.textContent = els.dodgeRange.value;
+      els.wordGapValue.textContent = `${els.wordGap.value}px`;
     }
 
     function rebuildScene() {
       updateReadouts();
-      const layout = buildMainLayout(els.mainText.value);
-      renderMain(layout);
-      renderObstacle();
-      const obstacle = shapeObstacle();
-      repelCenters = layout.map((item) => ({
-        x: item.x + item.metrics.width / 2,
-        y: item.y - item.metrics.ascent / 2 + item.metrics.descent / 2
-      })).concat({
-        x: obstacle.x + obstacle.width / 2,
-        y: obstacle.y + obstacle.height / 2
-      });
-      maskData = buildCollisionMask(layout, numberValue(els.outlinePx));
+      mainLayout = buildMainLayout(els.mainText.value);
+      renderMain(mainLayout);
+      buildCollisionMask(mainLayout, numberValue(els.outlinePx));
       renderClearance();
       renderDebugMask(els.showMask.checked);
-      if (layoutSignature !== gridSignature()) rebuildGrid();
-      els.count.textContent = `${particles.length} grid words simulated`;
+      layoutGrid(performance.now());
     }
 
     function exportSvg() {
@@ -1005,8 +783,11 @@
     function animate(now) {
       const dt = Math.min(0.033, (now - lastFrame) / 1000);
       lastFrame = now;
-      if (layoutSignature !== gridSignature()) rebuildGrid();
-      stepPhysics(now, dt);
+      const size = numberValue(els.gridSize);
+      const metrics = metricsFor(els.gridText.value.trim().toUpperCase() || "INDIGO 2026", size);
+      const cellW = Math.max(metrics.width + numberValue(els.columnGap) + numberValue(els.wordGap), 80);
+      gridOffset = (gridOffset + numberValue(els.gridSpeed) * dt) % cellW;
+      layoutGrid(now);
       requestAnimationFrame(animate);
     }
 
@@ -1019,16 +800,18 @@
       els.gridSize,
       els.columnGap,
       els.rowGap,
-      els.gridSpeed,
       els.floatAmount,
-      els.floatSpeed,
-      els.maskStrength,
-      els.wordStrength,
-      els.returnStrength,
+      els.dodgeRange,
+      els.wordGap,
       els.showMask
     ].forEach((element) => {
       element.addEventListener("input", rebuildScene);
       element.addEventListener("change", rebuildScene);
+    });
+
+    [els.gridSpeed, els.floatSpeed].forEach((element) => {
+      element.addEventListener("input", updateReadouts);
+      element.addEventListener("change", updateReadouts);
     });
 
     els.resetMotion.addEventListener("click", () => {
