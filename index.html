@@ -69,8 +69,7 @@
       letter-spacing: 0;
     }
 
-    input[type="text"],
-    input[type="number"] {
+    input[type="text"] {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -109,21 +108,6 @@
       background: #fafafa;
     }
 
-    .check-row {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin: 8px 0 16px;
-      font-size: 14px;
-      color: #2d2a25;
-    }
-
-    .check-row input {
-      width: 17px;
-      height: 17px;
-      accent-color: #111;
-    }
-
     .actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -147,13 +131,6 @@
       color: #111;
     }
 
-    .meta {
-      margin-top: 16px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
-
     .stage {
       min-height: 100vh;
       display: grid;
@@ -166,6 +143,7 @@
       width: min(76vw, 820px);
       height: auto;
       overflow: visible;
+      touch-action: none;
     }
 
     .poster-bg {
@@ -173,22 +151,43 @@
     }
 
     .main-text,
-    .grid-text {
-      fill: #000;
+    .grid-text,
+    .mask-text {
       font-family: Arial Black, Arial, Helvetica, sans-serif;
       font-weight: 900;
       letter-spacing: 0;
       dominant-baseline: alphabetic;
     }
 
-    .clearance-mask,
-    .debug-mask {
-      image-rendering: auto;
+    .main-text,
+    .grid-text {
+      fill: #000;
     }
 
-    .debug-mask {
-      opacity: 0.12;
-      image-rendering: pixelated;
+    .main-text {
+      cursor: grab;
+      user-select: none;
+    }
+
+    .main-text.dragging {
+      cursor: grabbing;
+    }
+
+    .mask-text {
+      fill: var(--paper);
+      stroke: var(--paper);
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    .hit-box {
+      fill: transparent;
+      cursor: grab;
+    }
+
+    .hit-box.dragging {
+      cursor: grabbing;
     }
 
     @media (max-width: 860px) {
@@ -222,25 +221,25 @@
     </div>
 
     <div class="control">
-      <label for="mainScale">Main text scale</label>
+      <label for="wordSize">Word size</label>
       <div class="range-row">
-        <input id="mainScale" type="range" min="65" max="125" value="92">
-        <output id="mainScaleValue" class="value">92%</output>
+        <input id="wordSize" type="range" min="54" max="240" value="220">
+        <output id="wordSizeValue" class="value">220px</output>
       </div>
     </div>
 
     <div class="control">
-      <label for="outlinePx">Collision outline</label>
+      <label for="outlinePx">Invisible mask</label>
       <div class="range-row">
-        <input id="outlinePx" type="range" min="0" max="90" value="30">
-        <output id="outlineValue" class="value">30px</output>
+        <input id="outlinePx" type="range" min="0" max="90" value="26">
+        <output id="outlineValue" class="value">26px</output>
       </div>
     </div>
 
     <div class="control">
       <label for="edgePx">Poster edge</label>
       <div class="range-row">
-        <input id="edgePx" type="range" min="0" max="80" value="18">
+        <input id="edgePx" type="range" min="0" max="90" value="18">
         <output id="edgeValue" class="value">18px</output>
       </div>
     </div>
@@ -255,80 +254,65 @@
     <div class="control">
       <label for="gridSize">Grid text size</label>
       <div class="range-row">
-        <input id="gridSize" type="range" min="28" max="96" value="56">
+        <input id="gridSize" type="range" min="24" max="110" value="56">
         <output id="gridSizeValue" class="value">56px</output>
       </div>
     </div>
 
     <div class="control">
-      <label for="columnGap">Horizontal tiling</label>
+      <label for="columnGap">Grid x padding</label>
       <div class="range-row">
-        <input id="columnGap" type="range" min="-20" max="180" value="44">
-        <output id="columnGapValue" class="value">44px</output>
+        <input id="columnGap" type="range" min="-40" max="220" value="42">
+        <output id="columnGapValue" class="value">42px</output>
       </div>
     </div>
 
     <div class="control">
-      <label for="rowGap">Vertical tiling</label>
+      <label for="rowGap">Grid y padding</label>
       <div class="range-row">
-        <input id="rowGap" type="range" min="-10" max="80" value="7">
+        <input id="rowGap" type="range" min="-20" max="110" value="7">
         <output id="rowGapValue" class="value">7px</output>
       </div>
     </div>
 
     <div class="control">
-      <label for="gridSpeed">Left drift speed</label>
+      <label for="gridSpeed">Grid left speed</label>
       <div class="range-row">
-        <input id="gridSpeed" type="range" min="0" max="90" value="14">
-        <output id="gridSpeedValue" class="value">14</output>
+        <input id="gridSpeed" type="range" min="0" max="140" value="18">
+        <output id="gridSpeedValue" class="value">18</output>
       </div>
     </div>
 
-    <div class="section-title">Motion</div>
-
-    <div class="control">
-      <label for="floatAmount">Float amount</label>
-      <div class="range-row">
-        <input id="floatAmount" type="range" min="0" max="28" value="3">
-        <output id="floatAmountValue" class="value">3px</output>
-      </div>
-    </div>
-
-    <div class="control">
-      <label for="floatSpeed">Float speed</label>
-      <div class="range-row">
-        <input id="floatSpeed" type="range" min="0" max="120" value="22">
-        <output id="floatSpeedValue" class="value">22</output>
-      </div>
-    </div>
-
-    <div class="control">
-      <label for="dodgeRange">Collision push</label>
-      <div class="range-row">
-        <input id="dodgeRange" type="range" min="0" max="260" value="120">
-        <output id="dodgeRangeValue" class="value">120</output>
-      </div>
-    </div>
+    <div class="section-title">Word Physics</div>
 
     <div class="control">
       <label for="wordGap">Word collision gap</label>
       <div class="range-row">
-        <input id="wordGap" type="range" min="0" max="40" value="6">
-        <output id="wordGapValue" class="value">6px</output>
+        <input id="wordGap" type="range" min="0" max="80" value="8">
+        <output id="wordGapValue" class="value">8px</output>
       </div>
     </div>
 
-    <label class="check-row">
-      <input id="showMask" type="checkbox">
-      Show collision mask
-    </label>
-
-    <div class="actions">
-      <button id="resetMotion" class="secondary" type="button">Reset</button>
-      <button id="exportSvg" type="button">Export SVG</button>
+    <div class="control">
+      <label for="bounce">Bounce</label>
+      <div class="range-row">
+        <input id="bounce" type="range" min="20" max="100" value="82">
+        <output id="bounceValue" class="value">82%</output>
+      </div>
     </div>
 
-    <div id="count" class="meta"></div>
+    <div class="control">
+      <label for="friction">Friction</label>
+      <div class="range-row">
+        <input id="friction" type="range" min="0" max="8" step="0.1" value="1.2">
+        <output id="frictionValue" class="value">1.2</output>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="resetWords" class="secondary" type="button">Reset</button>
+      <button id="exportSvg" type="button">Export SVG</button>
+    </div>
   </aside>
 
   <main class="stage">
@@ -342,9 +326,9 @@
         </defs>
         <rect class="poster-bg" width="760" height="960"></rect>
         <g id="gridLayer" clip-path="url(#posterClip)"></g>
-        <g id="clearanceLayer"></g>
-        <g id="debugLayer"></g>
-        <g id="mainLayer"></g>
+        <g id="clearanceLayer" clip-path="url(#posterClip)"></g>
+        <g id="mainLayer" clip-path="url(#posterClip)"></g>
+        <g id="hitLayer" clip-path="url(#posterClip)"></g>
       </g>
     </svg>
   </main>
@@ -352,14 +336,12 @@
   <script>
     const SVG_NS = "http://www.w3.org/2000/svg";
     const POSTER = { width: 760, height: 960 };
-    const SCALE = 2;
     const FONT_STACK = "Arial Black, Arial, Helvetica, sans-serif";
-    const PAPER = [244, 243, 241];
 
     const els = {
       mainText: document.querySelector("#mainText"),
-      mainScale: document.querySelector("#mainScale"),
-      mainScaleValue: document.querySelector("#mainScaleValue"),
+      wordSize: document.querySelector("#wordSize"),
+      wordSizeValue: document.querySelector("#wordSizeValue"),
       outlinePx: document.querySelector("#outlinePx"),
       outlineValue: document.querySelector("#outlineValue"),
       edgePx: document.querySelector("#edgePx"),
@@ -373,41 +355,31 @@
       rowGapValue: document.querySelector("#rowGapValue"),
       gridSpeed: document.querySelector("#gridSpeed"),
       gridSpeedValue: document.querySelector("#gridSpeedValue"),
-      floatAmount: document.querySelector("#floatAmount"),
-      floatAmountValue: document.querySelector("#floatAmountValue"),
-      floatSpeed: document.querySelector("#floatSpeed"),
-      floatSpeedValue: document.querySelector("#floatSpeedValue"),
-      dodgeRange: document.querySelector("#dodgeRange"),
-      dodgeRangeValue: document.querySelector("#dodgeRangeValue"),
       wordGap: document.querySelector("#wordGap"),
       wordGapValue: document.querySelector("#wordGapValue"),
-      showMask: document.querySelector("#showMask"),
-      resetMotion: document.querySelector("#resetMotion"),
+      bounce: document.querySelector("#bounce"),
+      bounceValue: document.querySelector("#bounceValue"),
+      friction: document.querySelector("#friction"),
+      frictionValue: document.querySelector("#frictionValue"),
+      resetWords: document.querySelector("#resetWords"),
       exportSvg: document.querySelector("#exportSvg"),
-      count: document.querySelector("#count"),
       svg: document.querySelector("#posterSvg"),
+      posterGroup: document.querySelector("#posterGroup"),
       gridLayer: document.querySelector("#gridLayer"),
       clearanceLayer: document.querySelector("#clearanceLayer"),
-      debugLayer: document.querySelector("#debugLayer"),
-      mainLayer: document.querySelector("#mainLayer")
+      mainLayer: document.querySelector("#mainLayer"),
+      hitLayer: document.querySelector("#hitLayer")
     };
 
     const measureCanvas = document.createElement("canvas");
     const measureCtx = measureCanvas.getContext("2d");
-    const maskCanvas = document.createElement("canvas");
-    const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
-    const clearanceCanvas = document.createElement("canvas");
-    const clearanceCtx = clearanceCanvas.getContext("2d", { willReadFrequently: true });
 
-    maskCanvas.width = POSTER.width * SCALE;
-    maskCanvas.height = POSTER.height * SCALE;
-    clearanceCanvas.width = maskCanvas.width;
-    clearanceCanvas.height = maskCanvas.height;
-
-    let tiles = [];
-    let mainLayout = [];
+    let gridTiles = [];
+    let wordBodies = [];
     let gridSignatureValue = "";
+    let wordSignatureValue = "";
     let gridOffset = 0;
+    let activeWord = null;
     let lastFrame = performance.now();
 
     function svgEl(name, attrs = {}) {
@@ -432,12 +404,9 @@
       return `900 ${size}px ${FONT_STACK}`;
     }
 
-    function normalizeLines(text) {
-      const trimmed = text.trim() || "Save the Date";
-      if (trimmed.includes("\n")) {
-        return trimmed.split(/\n+/).map((line) => line.trim()).filter(Boolean);
-      }
-      return trimmed.split(/\s+/).filter(Boolean);
+    function tokensFromInput() {
+      const text = els.mainText.value.trim() || "Save the Date";
+      return text.split(/\s+/).filter(Boolean).slice(0, 9);
     }
 
     function metricsFor(text, size) {
@@ -455,164 +424,129 @@
     function fitSize(text, maxWidth, maxHeight, maxSize) {
       const at100 = metricsFor(text, 100).width || 100;
       const widthSize = (maxWidth / at100) * 100;
-      return clamp(Math.min(widthSize, maxHeight), 48, maxSize);
+      return clamp(Math.min(widthSize, maxHeight, maxSize), 24, maxSize);
     }
 
-    function buildMainLayout(text) {
-      const lines = normalizeLines(text).slice(0, 5);
-      const scale = numberValue(els.mainScale) / 100;
-      const topPad = 86;
-      const bottomPad = 98;
-      const sidePad = 40;
-      const availableHeight = POSTER.height - topPad - bottomPad;
-      const band = availableHeight / lines.length;
-
-      return lines.map((line, index) => {
-        const fitted = fitSize(line, POSTER.width - sidePad * 2, band * 0.98, 250);
-        const size = fitted * scale;
-        const metrics = metricsFor(line, size);
-        const x = (POSTER.width - metrics.width) / 2;
-        const y = topPad + band * index + band * 0.7;
-        return { text: line, x, y, size, metrics };
-      });
+    function wordBox(word, pad = 0) {
+      return {
+        left: word.x - word.metrics.left - pad,
+        top: word.y - word.metrics.ascent - pad,
+        right: word.x + word.metrics.right + pad,
+        bottom: word.y + word.metrics.descent + pad,
+        width: word.metrics.width + pad * 2,
+        height: word.metrics.ascent + word.metrics.descent + pad * 2
+      };
     }
 
-    function drawMainTextToContext(ctx, layout, outlinePx) {
-      const radius = Math.max(0, outlinePx);
-      const step = radius <= 2 ? 1 : Math.max(2, Math.round(radius / 9));
-      const offsets = [];
-
-      if (radius === 0) {
-        offsets.push([0, 0]);
-      } else {
-        for (let dx = -radius; dx <= radius; dx += step) {
-          for (let dy = -radius; dy <= radius; dy += step) {
-            if (dx * dx + dy * dy <= radius * radius) offsets.push([dx, dy]);
-          }
-        }
-        offsets.push([0, 0]);
-      }
-
-      ctx.fillStyle = "#000";
-      layout.forEach((item) => {
-        ctx.font = font(item.size);
-        offsets.forEach(([dx, dy]) => ctx.fillText(item.text, item.x + dx, item.y + dy));
-      });
+    function updateReadouts() {
+      els.wordSizeValue.textContent = `${els.wordSize.value}px`;
+      els.outlineValue.textContent = `${els.outlinePx.value}px`;
+      els.edgeValue.textContent = `${els.edgePx.value}px`;
+      els.gridSizeValue.textContent = `${els.gridSize.value}px`;
+      els.columnGapValue.textContent = `${els.columnGap.value}px`;
+      els.rowGapValue.textContent = `${els.rowGap.value}px`;
+      els.gridSpeedValue.textContent = els.gridSpeed.value;
+      els.wordGapValue.textContent = `${els.wordGap.value}px`;
+      els.bounceValue.textContent = `${els.bounce.value}%`;
+      els.frictionValue.textContent = els.friction.value;
     }
 
-    function closeMaskHoles(imageData) {
-      const { data, width, height } = imageData;
-      const total = width * height;
-      const outside = new Uint8Array(total);
-      const queue = new Int32Array(total);
-      let head = 0;
-      let tail = 0;
+    function rebuildWords(keepPositions = false) {
+      const tokens = tokensFromInput();
+      const oldWords = wordBodies;
+      const targetSize = numberValue(els.wordSize);
+      const edge = numberValue(els.edgePx);
+      const band = (POSTER.height - edge * 2) / Math.max(1, tokens.length);
 
-      function enqueue(index) {
-        if (outside[index]) return;
-        if (data[index * 4 + 3] > 12) return;
-        outside[index] = 1;
-        queue[tail] = index;
-        tail += 1;
-      }
-
-      for (let x = 0; x < width; x += 1) {
-        enqueue(x);
-        enqueue((height - 1) * width + x);
-      }
-
-      for (let y = 0; y < height; y += 1) {
-        enqueue(y * width);
-        enqueue(y * width + width - 1);
-      }
-
-      while (head < tail) {
-        const index = queue[head];
-        head += 1;
-        const x = index % width;
-        const y = (index - x) / width;
-
-        if (x > 0) enqueue(index - 1);
-        if (x < width - 1) enqueue(index + 1);
-        if (y > 0) enqueue(index - width);
-        if (y < height - 1) enqueue(index + width);
-      }
-
-      for (let index = 0; index < total; index += 1) {
-        const alphaIndex = index * 4 + 3;
-        if (data[alphaIndex] <= 12 && outside[index] === 0) {
-          data[index * 4] = 0;
-          data[index * 4 + 1] = 0;
-          data[index * 4 + 2] = 0;
-          data[alphaIndex] = 255;
-        }
-      }
-    }
-
-    function updateClearanceCanvas(imageData) {
-      const clearance = clearanceCtx.createImageData(imageData.width, imageData.height);
-
-      for (let i = 0; i < imageData.data.length; i += 4) {
-        if (imageData.data[i + 3] <= 12) continue;
-        clearance.data[i] = PAPER[0];
-        clearance.data[i + 1] = PAPER[1];
-        clearance.data[i + 2] = PAPER[2];
-        clearance.data[i + 3] = 255;
-      }
-
-      clearanceCtx.putImageData(clearance, 0, 0);
-    }
-
-    function buildCollisionMask(layout, outlinePx) {
-      maskCtx.setTransform(1, 0, 0, 1, 0, 0);
-      maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
-      maskCtx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-      drawMainTextToContext(maskCtx, layout, outlinePx);
-      maskCtx.setTransform(1, 0, 0, 1, 0, 0);
-      const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
-      closeMaskHoles(imageData);
-      maskCtx.putImageData(imageData, 0, 0);
-      updateClearanceCanvas(imageData);
-      return imageData.data;
-    }
-
-    function renderMain(layout) {
-      clear(els.mainLayer);
-      layout.forEach((item) => {
-        const text = svgEl("text", {
-          class: "main-text",
-          x: item.x.toFixed(2),
-          y: item.y.toFixed(2),
-          "font-size": item.size.toFixed(2)
-        });
-        text.textContent = item.text;
-        els.mainLayer.appendChild(text);
-      });
-    }
-
-    function renderClearance() {
       clear(els.clearanceLayer);
-      els.clearanceLayer.appendChild(svgEl("image", {
-        class: "clearance-mask",
-        x: 0,
-        y: 0,
-        width: POSTER.width,
-        height: POSTER.height,
-        href: clearanceCanvas.toDataURL("image/png")
-      }));
+      clear(els.mainLayer);
+      clear(els.hitLayer);
+
+      wordBodies = tokens.map((text, index) => {
+        const size = fitSize(text, POSTER.width - edge * 2 - 18, Math.max(50, band * 0.86), targetSize);
+        const metrics = metricsFor(text, size);
+        const existing = keepPositions ? oldWords[index] : null;
+        const x = existing ? existing.x : (POSTER.width - metrics.width) / 2;
+        const y = existing ? existing.y : edge + band * index + band * 0.68 + metrics.ascent * 0.2;
+        const mass = Math.max(1, (metrics.width * (metrics.ascent + metrics.descent)) / 9000);
+        const maskNode = svgEl("text", { class: "mask-text" });
+        const textNode = svgEl("text", { class: "main-text" });
+        const hitNode = svgEl("rect", { class: "hit-box" });
+        const word = {
+          text,
+          index,
+          x,
+          y,
+          vx: existing ? existing.vx : 0,
+          vy: existing ? existing.vy : 0,
+          size,
+          metrics,
+          mass,
+          maskNode,
+          textNode,
+          hitNode,
+          dragging: false,
+          dragDx: 0,
+          dragDy: 0,
+          lastPointerX: 0,
+          lastPointerY: 0,
+          lastPointerTime: performance.now()
+        };
+
+        maskNode.textContent = text;
+        textNode.textContent = text;
+        hitNode.addEventListener("pointerdown", (event) => startDrag(event, word));
+        textNode.addEventListener("pointerdown", (event) => startDrag(event, word));
+        els.clearanceLayer.appendChild(maskNode);
+        els.mainLayer.appendChild(textNode);
+        els.hitLayer.appendChild(hitNode);
+        return word;
+      });
+
+      wordBodies.forEach((word) => {
+        keepWordInsidePoster(word);
+      });
+      wordSignatureValue = wordSignature();
+      updateWordNodes();
     }
 
-    function renderDebugMask(show) {
-      clear(els.debugLayer);
-      if (!show) return;
-      els.debugLayer.appendChild(svgEl("image", {
-        class: "debug-mask",
-        x: 0,
-        y: 0,
-        width: POSTER.width,
-        height: POSTER.height,
-        href: maskCanvas.toDataURL("image/png")
-      }));
+    function wordSignature() {
+      return [
+        tokensFromInput().join("|"),
+        els.wordSize.value,
+        els.edgePx.value
+      ].join("|");
+    }
+
+    function updateWordMetrics() {
+      wordBodies.forEach((word) => {
+        word.size = fitSize(word.text, POSTER.width - numberValue(els.edgePx) * 2 - 18, POSTER.height, numberValue(els.wordSize));
+        word.metrics = metricsFor(word.text, word.size);
+        word.mass = Math.max(1, (word.metrics.width * (word.metrics.ascent + word.metrics.descent)) / 9000);
+      });
+    }
+
+    function updateWordNodes() {
+      const outline = numberValue(els.outlinePx);
+      wordBodies.forEach((word) => {
+        const box = wordBox(word, 10);
+
+        word.maskNode.setAttribute("x", word.x.toFixed(2));
+        word.maskNode.setAttribute("y", word.y.toFixed(2));
+        word.maskNode.setAttribute("font-size", word.size.toFixed(2));
+        word.maskNode.setAttribute("stroke-width", (outline * 2).toFixed(2));
+
+        word.textNode.setAttribute("x", word.x.toFixed(2));
+        word.textNode.setAttribute("y", word.y.toFixed(2));
+        word.textNode.setAttribute("font-size", word.size.toFixed(2));
+        word.textNode.classList.toggle("dragging", word.dragging);
+
+        word.hitNode.setAttribute("x", box.left.toFixed(2));
+        word.hitNode.setAttribute("y", box.top.toFixed(2));
+        word.hitNode.setAttribute("width", box.width.toFixed(2));
+        word.hitNode.setAttribute("height", box.height.toFixed(2));
+        word.hitNode.classList.toggle("dragging", word.dragging);
+      });
     }
 
     function gridSignature() {
@@ -620,22 +554,20 @@
         els.gridText.value,
         els.gridSize.value,
         els.columnGap.value,
-        els.rowGap.value,
-        els.wordGap.value
+        els.rowGap.value
       ].join("|");
     }
 
     function rebuildGrid() {
       clear(els.gridLayer);
-      tiles = [];
+      gridTiles = [];
       gridOffset = 0;
 
       const text = els.gridText.value.trim().toUpperCase() || "INDIGO 2026";
       const size = numberValue(els.gridSize);
       const metrics = metricsFor(text, size);
-      const wordGap = numberValue(els.wordGap);
-      const cellW = Math.max(metrics.width + numberValue(els.columnGap) + wordGap, 80);
-      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap) + wordGap, 20);
+      const cellW = Math.max(metrics.width + numberValue(els.columnGap), 32);
+      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap), 16);
       const rows = Math.ceil((POSTER.height + cellH) / cellH);
       const cols = Math.ceil((POSTER.width + cellW * 2) / cellW);
 
@@ -647,129 +579,210 @@
           });
           node.textContent = text;
           els.gridLayer.appendChild(node);
-          tiles.push({
-            row,
-            col,
-            node,
-            size,
-            text,
-            metrics,
-            phase: row * 1.73 + col * 0.91
-          });
+          gridTiles.push({ row, col, node });
         }
       }
 
       gridSignatureValue = gridSignature();
     }
 
-    function pushFromHeadline(x, y) {
-      const range = numberValue(els.dodgeRange);
-      if (range <= 0 || mainLayout.length === 0) return { x, y };
-
-      let pushX = 0;
-      let pushY = 0;
-      const maxPush = Math.min(26, range * 0.11);
-
-      mainLayout.forEach((item) => {
-        const box = {
-          left: item.x - numberValue(els.outlinePx),
-          right: item.x + item.metrics.width + numberValue(els.outlinePx),
-          top: item.y - item.metrics.ascent - numberValue(els.outlinePx),
-          bottom: item.y + item.metrics.descent + numberValue(els.outlinePx)
-        };
-        const nearestX = clamp(x, box.left, box.right);
-        const nearestY = clamp(y, box.top, box.bottom);
-        const dx = x - nearestX;
-        const dy = y - nearestY;
-        const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-        const influence = clamp(1 - distance / range, 0, 1);
-
-        if (influence > 0) {
-          const sideX = x < (box.left + box.right) / 2 ? -1 : 1;
-          const sideY = y < (box.top + box.bottom) / 2 ? -1 : 1;
-          const nx = Math.abs(dx) > 0.01 ? dx / distance : sideX * 0.35;
-          const ny = Math.abs(dy) > 0.01 ? dy / distance : sideY * 0.35;
-          pushX += nx * influence * maxPush;
-          pushY += ny * influence * maxPush * 0.45;
-        }
-      });
-
-      return { x: x + pushX, y: y + pushY };
-    }
-
-    function layoutGrid(time) {
+    function layoutGrid() {
       if (gridSignatureValue !== gridSignature()) rebuildGrid();
 
       const text = els.gridText.value.trim().toUpperCase() || "INDIGO 2026";
       const size = numberValue(els.gridSize);
       const metrics = metricsFor(text, size);
-      const wordGap = numberValue(els.wordGap);
-      const edgePx = numberValue(els.edgePx);
-      const cellW = Math.max(metrics.width + numberValue(els.columnGap) + wordGap, 80);
-      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap) + wordGap, 20);
-      const floatAmount = numberValue(els.floatAmount);
-      const floatSpeed = numberValue(els.floatSpeed) * 0.001;
-      const wave = time * floatSpeed;
-      let visibleCount = 0;
+      const edge = numberValue(els.edgePx);
+      const cellW = Math.max(metrics.width + numberValue(els.columnGap), 32);
+      const cellH = Math.max(metrics.ascent + metrics.descent + numberValue(els.rowGap), 16);
 
-      tiles.forEach((tile) => {
-        tile.size = size;
-        tile.text = text;
-        tile.metrics = metrics;
+      gridTiles.forEach((tile) => {
+        const x = tile.col * cellW + edge - gridOffset;
+        const y = tile.row * cellH + metrics.ascent + edge;
         tile.node.textContent = text;
         tile.node.setAttribute("font-size", size.toFixed(2));
-
-        const wrappedX = tile.col * cellW + edgePx - gridOffset;
-        const baseY = tile.row * cellH + metrics.ascent + edgePx;
-        const anchorX = wrappedX + Math.sin(wave + tile.phase) * floatAmount;
-        const anchorY = baseY + Math.cos(wave * 0.78 + tile.phase * 1.23) * floatAmount * 0.55;
-        const pushed = pushFromHeadline(anchorX + metrics.width / 2, anchorY - metrics.ascent / 2);
-        const x = anchorX + (pushed.x - (anchorX + metrics.width / 2));
-        const y = anchorY + (pushed.y - (anchorY - metrics.ascent / 2));
-        const visible = y > -cellH && y < POSTER.height + cellH;
-
         tile.node.setAttribute("x", x.toFixed(2));
         tile.node.setAttribute("y", y.toFixed(2));
-        tile.node.style.display = visible ? "" : "none";
+      });
+    }
 
-        if (visible) {
-          visibleCount += 1;
+    function keepWordInsidePoster(word) {
+      const edge = numberValue(els.edgePx);
+      const bounce = numberValue(els.bounce) / 100;
+      const box = wordBox(word, numberValue(els.wordGap) / 2);
+
+      if (box.left < edge) {
+        word.x += edge - box.left;
+        word.vx = Math.abs(word.vx) * bounce;
+      }
+      if (box.right > POSTER.width - edge) {
+        word.x -= box.right - (POSTER.width - edge);
+        word.vx = -Math.abs(word.vx) * bounce;
+      }
+      if (box.top < edge) {
+        word.y += edge - box.top;
+        word.vy = Math.abs(word.vy) * bounce;
+      }
+      if (box.bottom > POSTER.height - edge) {
+        word.y -= box.bottom - (POSTER.height - edge);
+        word.vy = -Math.abs(word.vy) * bounce;
+      }
+    }
+
+    function resolveWordCollision(a, b) {
+      const pad = numberValue(els.wordGap) / 2;
+      const aBox = wordBox(a, pad);
+      const bBox = wordBox(b, pad);
+
+      if (
+        aBox.right <= bBox.left ||
+        aBox.left >= bBox.right ||
+        aBox.bottom <= bBox.top ||
+        aBox.top >= bBox.bottom
+      ) {
+        return;
+      }
+
+      const aCenterX = (aBox.left + aBox.right) / 2;
+      const aCenterY = (aBox.top + aBox.bottom) / 2;
+      const bCenterX = (bBox.left + bBox.right) / 2;
+      const bCenterY = (bBox.top + bBox.bottom) / 2;
+      const overlapX = Math.min(aBox.right - bBox.left, bBox.right - aBox.left);
+      const overlapY = Math.min(aBox.bottom - bBox.top, bBox.bottom - aBox.top);
+      let nx = 0;
+      let ny = 0;
+      let separation = 0;
+
+      if (overlapX < overlapY) {
+        nx = aCenterX < bCenterX ? -1 : 1;
+        separation = overlapX;
+      } else {
+        ny = aCenterY < bCenterY ? -1 : 1;
+        separation = overlapY;
+      }
+
+      const invA = a.dragging ? 0 : 1 / a.mass;
+      const invB = b.dragging ? 0 : 1 / b.mass;
+      const invSum = invA + invB;
+      if (invSum === 0) return;
+
+      const correction = separation + 0.8;
+      a.x += nx * correction * (invA / invSum);
+      a.y += ny * correction * (invA / invSum);
+      b.x -= nx * correction * (invB / invSum);
+      b.y -= ny * correction * (invB / invSum);
+
+      const relativeVx = a.vx - b.vx;
+      const relativeVy = a.vy - b.vy;
+      const velocityAlongNormal = relativeVx * nx + relativeVy * ny;
+      if (velocityAlongNormal > 0) return;
+
+      const bounce = numberValue(els.bounce) / 100;
+      const impulse = (-(1 + bounce) * velocityAlongNormal) / invSum;
+      a.vx += impulse * invA * nx;
+      a.vy += impulse * invA * ny;
+      b.vx -= impulse * invB * nx;
+      b.vy -= impulse * invB * ny;
+    }
+
+    function solvePhysics(dt) {
+      const damping = Math.exp(-numberValue(els.friction) * dt);
+
+      wordBodies.forEach((word) => {
+        if (!word.dragging) {
+          word.x += word.vx * dt;
+          word.y += word.vy * dt;
+          word.vx *= damping;
+          word.vy *= damping;
+          if (Math.abs(word.vx) < 1) word.vx = 0;
+          if (Math.abs(word.vy) < 1) word.vy = 0;
         }
       });
 
-      els.count.textContent = `${visibleCount} grid words moving behind the editable collision outline`;
+      for (let iteration = 0; iteration < 5; iteration += 1) {
+        for (let i = 0; i < wordBodies.length; i += 1) {
+          for (let j = i + 1; j < wordBodies.length; j += 1) {
+            resolveWordCollision(wordBodies[i], wordBodies[j]);
+          }
+        }
+        wordBodies.forEach(keepWordInsidePoster);
+      }
     }
 
-    function updateReadouts() {
-      els.mainScaleValue.textContent = `${els.mainScale.value}%`;
-      els.outlineValue.textContent = `${els.outlinePx.value}px`;
-      els.edgeValue.textContent = `${els.edgePx.value}px`;
-      els.gridSizeValue.textContent = `${els.gridSize.value}px`;
-      els.columnGapValue.textContent = `${els.columnGap.value}px`;
-      els.rowGapValue.textContent = `${els.rowGap.value}px`;
-      els.gridSpeedValue.textContent = els.gridSpeed.value;
-      els.floatAmountValue.textContent = `${els.floatAmount.value}px`;
-      els.floatSpeedValue.textContent = els.floatSpeed.value;
-      els.dodgeRangeValue.textContent = els.dodgeRange.value;
-      els.wordGapValue.textContent = `${els.wordGap.value}px`;
+    function pointerToPoster(event) {
+      const point = els.svg.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      return point.matrixTransform(els.posterGroup.getScreenCTM().inverse());
     }
 
-    function rebuildScene() {
+    function startDrag(event, word) {
+      event.preventDefault();
+      event.stopPropagation();
+      const point = pointerToPoster(event);
+      activeWord = word;
+      word.dragging = true;
+      word.dragDx = point.x - word.x;
+      word.dragDy = point.y - word.y;
+      word.lastPointerX = point.x;
+      word.lastPointerY = point.y;
+      word.lastPointerTime = performance.now();
+      word.vx = 0;
+      word.vy = 0;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      updateWordNodes();
+    }
+
+    function moveDrag(event) {
+      if (!activeWord) return;
+      const point = pointerToPoster(event);
+      const now = performance.now();
+      const dt = Math.max(0.016, (now - activeWord.lastPointerTime) / 1000);
+      const nextX = point.x - activeWord.dragDx;
+      const nextY = point.y - activeWord.dragDy;
+      activeWord.vx = (nextX - activeWord.x) / dt;
+      activeWord.vy = (nextY - activeWord.y) / dt;
+      activeWord.x = nextX;
+      activeWord.y = nextY;
+      activeWord.lastPointerX = point.x;
+      activeWord.lastPointerY = point.y;
+      activeWord.lastPointerTime = now;
+      keepWordInsidePoster(activeWord);
+      solvePhysics(0.016);
+      updateWordNodes();
+    }
+
+    function endDrag() {
+      if (!activeWord) return;
+      activeWord.dragging = false;
+      activeWord = null;
+      updateWordNodes();
+    }
+
+    function resetWords() {
+      rebuildWords(false);
+    }
+
+    function updateFromControls() {
       updateReadouts();
-      mainLayout = buildMainLayout(els.mainText.value);
-      renderMain(mainLayout);
-      buildCollisionMask(mainLayout, numberValue(els.outlinePx));
-      renderClearance();
-      renderDebugMask(els.showMask.checked);
-      layoutGrid(performance.now());
+      if (wordSignatureValue !== wordSignature()) {
+        rebuildWords(true);
+      } else {
+        updateWordMetrics();
+        wordBodies.forEach(keepWordInsidePoster);
+        updateWordNodes();
+      }
+      if (gridSignatureValue !== gridSignature()) {
+        rebuildGrid();
+      }
+      layoutGrid();
     }
 
     function exportSvg() {
       const clone = els.svg.cloneNode(true);
-      const debug = clone.querySelector("#debugLayer");
-      if (debug) debug.replaceChildren();
       clone.setAttribute("xmlns", SVG_NS);
-
+      const hitLayer = clone.querySelector("#hitLayer");
+      if (hitLayer) hitLayer.replaceChildren();
       const source = `<?xml version="1.0" encoding="UTF-8"?>\n${new XMLSerializer().serializeToString(clone)}`;
       const blob = new Blob([source], { type: "image/svg+xml" });
       const url = URL.createObjectURL(blob);
@@ -785,44 +798,41 @@
       lastFrame = now;
       const size = numberValue(els.gridSize);
       const metrics = metricsFor(els.gridText.value.trim().toUpperCase() || "INDIGO 2026", size);
-      const cellW = Math.max(metrics.width + numberValue(els.columnGap) + numberValue(els.wordGap), 80);
+      const cellW = Math.max(metrics.width + numberValue(els.columnGap), 32);
       gridOffset = (gridOffset + numberValue(els.gridSpeed) * dt) % cellW;
-      layoutGrid(now);
+      solvePhysics(dt);
+      layoutGrid();
+      updateWordNodes();
       requestAnimationFrame(animate);
     }
 
     [
       els.mainText,
-      els.mainScale,
+      els.wordSize,
       els.outlinePx,
       els.edgePx,
       els.gridText,
       els.gridSize,
       els.columnGap,
       els.rowGap,
-      els.floatAmount,
-      els.dodgeRange,
+      els.gridSpeed,
       els.wordGap,
-      els.showMask
+      els.bounce,
+      els.friction
     ].forEach((element) => {
-      element.addEventListener("input", rebuildScene);
-      element.addEventListener("change", rebuildScene);
+      element.addEventListener("input", updateFromControls);
+      element.addEventListener("change", updateFromControls);
     });
 
-    [els.gridSpeed, els.floatSpeed].forEach((element) => {
-      element.addEventListener("input", updateReadouts);
-      element.addEventListener("change", updateReadouts);
-    });
-
-    els.resetMotion.addEventListener("click", () => {
-      rebuildGrid();
-      rebuildScene();
-    });
-
+    document.addEventListener("pointermove", moveDrag);
+    document.addEventListener("pointerup", endDrag);
+    document.addEventListener("pointercancel", endDrag);
+    els.resetWords.addEventListener("click", resetWords);
     els.exportSvg.addEventListener("click", exportSvg);
 
+    updateReadouts();
     rebuildGrid();
-    rebuildScene();
+    rebuildWords(false);
     requestAnimationFrame(animate);
   </script>
 </body>
