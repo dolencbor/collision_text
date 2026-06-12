@@ -424,6 +424,9 @@
         <input id="wordGap" type="range" min="0" max="60" step="0.1" value="6">
         <input id="wordGapValue" class="value number-value" type="number" min="0" max="60" step="0.1" value="6" aria-label="Word collision gap value">
       </div>
+      <label for="showCollisionGap" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;font-weight:400;font-size:12px;color:#6b665f;">
+        <input id="showCollisionGap" type="checkbox"> Show collision gap overlay
+      </label>
     </div>
 
     <div class="control">
@@ -496,12 +499,19 @@
           <rect id="gridMaskBg" fill="white" width="100" height="100"/>
           <g id="gridMaskWords"></g>
         </mask>
+        <filter id="safeZoneTint" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <feColorMatrix type="matrix" values="0 0 0 1 0  0 0 0 0.196 0  0 0 0 0.314 0  0 0 0 0.4 0"/>
+        </filter>
+        <filter id="collisionGapTint" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <feColorMatrix type="matrix" values="0 0 0 0.18 0  0 0 0 0.55 0  0 0 0 1 0  0 0 0 0.4 0"/>
+        </filter>
       </defs>
       <rect id="paper" class="paper" width="100" height="100"></rect>
       <g id="gridLayer" mask="url(#gridMask)"></g>
       <g id="customLayer"></g>
-      <g id="safeZoneLayer"></g>
       <g id="mainLayer"></g>
+      <g id="collisionGapLayer"></g>
+      <g id="safeZoneLayer"></g>
       <g id="hitLayer"></g>
     </svg>
   </main>
@@ -540,6 +550,7 @@
       edgeValue: document.querySelector("#edgeValue"),
       wordGap: document.querySelector("#wordGap"),
       wordGapValue: document.querySelector("#wordGapValue"),
+      showCollisionGap: document.querySelector("#showCollisionGap"),
       floatStrength: document.querySelector("#floatStrength"),
       floatStrengthValue: document.querySelector("#floatStrengthValue"),
       floatSpeed: document.querySelector("#floatSpeed"),
@@ -564,6 +575,7 @@
       gridMaskBg: document.querySelector("#gridMaskBg"),
       gridMaskWords: document.querySelector("#gridMaskWords"),
       customLayer: document.querySelector("#customLayer"),
+      collisionGapLayer: document.querySelector("#collisionGapLayer"),
       safeZoneLayer: document.querySelector("#safeZoneLayer"),
       mainLayer: document.querySelector("#mainLayer"),
       hitLayer: document.querySelector("#hitLayer")
@@ -589,6 +601,15 @@
     const collisionCanvasB = document.createElement("canvas");
     const collisionCtxA = collisionCanvasA.getContext("2d", { willReadFrequently: true });
     const collisionCtxB = collisionCanvasB.getContext("2d", { willReadFrequently: true });
+    const SAFE_MASK_SCALE = 4;
+    const safeZoneMaskCanvas = document.createElement("canvas");
+    safeZoneMaskCanvas.width = Math.ceil(WORLD.width * SAFE_MASK_SCALE);
+    safeZoneMaskCanvas.height = Math.ceil(WORLD.height * SAFE_MASK_SCALE);
+    const safeZoneMaskCtx = safeZoneMaskCanvas.getContext("2d", { willReadFrequently: true });
+    const collisionGapMaskCanvas = document.createElement("canvas");
+    collisionGapMaskCanvas.width = Math.ceil(WORLD.width * SAFE_MASK_SCALE);
+    collisionGapMaskCanvas.height = Math.ceil(WORLD.height * SAFE_MASK_SCALE);
+    const collisionGapMaskCtx = collisionGapMaskCanvas.getContext("2d");
 
     let wordBodies = [];
     let customObjects = [];
@@ -707,6 +728,10 @@
 
       WORLD.width = nextWidth;
       WORLD.height = nextHeight;
+      safeZoneMaskCanvas.width = Math.ceil(WORLD.width * SAFE_MASK_SCALE);
+      safeZoneMaskCanvas.height = Math.ceil(WORLD.height * SAFE_MASK_SCALE);
+      collisionGapMaskCanvas.width = Math.ceil(WORLD.width * SAFE_MASK_SCALE);
+      collisionGapMaskCanvas.height = Math.ceil(WORLD.height * SAFE_MASK_SCALE);
       els.svg.setAttribute("viewBox", `0 0 ${WORLD.width.toFixed(3)} ${WORLD.height.toFixed(3)}`);
       els.paper.setAttribute("width", WORLD.width.toFixed(3));
       els.paper.setAttribute("height", WORLD.height.toFixed(3));
@@ -803,7 +828,7 @@
         ascent: Number.isFinite(metrics.actualBoundingBoxAscent) && metrics.actualBoundingBoxAscent > 0 ? metrics.actualBoundingBoxAscent : size * 0.78,
         descent: Number.isFinite(metrics.actualBoundingBoxDescent) ? metrics.actualBoundingBoxDescent : size * 0.18,
         left: metrics.actualBoundingBoxLeft || 0,
-        right: width
+        right: (Number.isFinite(metrics.actualBoundingBoxRight) && metrics.actualBoundingBoxRight > 0 ? metrics.actualBoundingBoxRight : width)
       };
     }
 
@@ -996,6 +1021,22 @@
       return Math.max(body.width, body.height) * amount;
     }
 
+    function updateSafeZoneMask() {
+      const w = safeZoneMaskCanvas.width;
+      const h = safeZoneMaskCanvas.height;
+      safeZoneMaskCtx.setTransform(1, 0, 0, 1, 0, 0);
+      safeZoneMaskCtx.clearRect(0, 0, w, h);
+      safeZoneMaskCtx.fillStyle = "rgba(255, 50, 80, 0.5)";
+      safeZoneMaskCtx.strokeStyle = "rgba(255, 50, 80, 0.5)";
+      safeZoneMaskCtx.lineJoin = "round";
+      safeZoneMaskCtx.lineCap = "round";
+      safeZoneMaskCtx.miterLimit = 2;
+      safeZoneMaskCtx.textBaseline = "alphabetic";
+      physicsBodies().forEach((body) => {
+        drawBodyMask(safeZoneMaskCtx, body, safeZoneRadius(body), SAFE_MASK_SCALE, 0, 0);
+      });
+    }
+
     function collisionRadius(body) {
       const amount = numberValue(els.wordGap) / 100;
       if (body.kind === "word") return body.size * amount;
@@ -1139,26 +1180,45 @@
       return numberValue(els.rotationAmount) * 0.36;
     }
 
+    function overlayTextNode(word, color, strokeWidth) {
+      const center = bodyCenter(word);
+      const rotate = `rotate(${word.angle.toFixed(3)} ${center.x.toFixed(3)} ${center.y.toFixed(3)})`;
+      const node = svgEl("text", {
+        x: word.x.toFixed(3),
+        y: word.y.toFixed(3),
+        "font-size": word.size.toFixed(3),
+        "font-family": selectedFontStack(),
+        "font-weight": fontWeightValue(),
+        "letter-spacing": letterSpacingValue().toFixed(3),
+        fill: color,
+        stroke: color,
+        "stroke-width": strokeWidth.toFixed(3),
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "paint-order": "stroke fill",
+        transform: rotate
+      });
+      node.textContent = word.text;
+      return node;
+    }
+
     function updateSafeZoneLayer() {
       clear(els.safeZoneLayer);
       if (!els.showSafeZone.checked) return;
       wordBodies.forEach((word) => {
-        if (!word.charOffsets) return;
-        const safeR = safeZoneRadius(word);
-        const center = bodyCenter(word);
-        const rotate = `rotate(${word.angle.toFixed(3)} ${center.x.toFixed(3)} ${center.y.toFixed(3)})`;
-        word.charOffsets.forEach(({ startX, left, right, ascent, descent }) => {
-          els.safeZoneLayer.appendChild(svgEl("rect", {
-            x: (word.x + startX - left - safeR).toFixed(3),
-            y: (word.y - ascent - safeR).toFixed(3),
-            width: (left + right + safeR * 2).toFixed(3),
-            height: (ascent + descent + safeR * 2).toFixed(3),
-            fill: "rgba(255, 50, 80, 0.12)",
-            stroke: "rgba(255, 50, 80, 0.55)",
-            "stroke-width": "0.2",
-            transform: rotate
-          }));
-        });
+        els.safeZoneLayer.appendChild(
+          overlayTextNode(word, "rgba(255, 50, 80, 0.45)", safeZoneRadius(word) * 2)
+        );
+      });
+    }
+
+    function updateCollisionGapLayer() {
+      clear(els.collisionGapLayer);
+      if (!els.showCollisionGap.checked) return;
+      wordBodies.forEach((word) => {
+        els.collisionGapLayer.appendChild(
+          overlayTextNode(word, "rgba(46, 140, 255, 0.45)", collisionRadius(word) * 2)
+        );
       });
     }
 
@@ -1211,6 +1271,7 @@
         object.maskNode.setAttribute("transform", rotate);
       });
       updateSafeZoneLayer();
+      updateCollisionGapLayer();
     }
 
     function gridReps() {
@@ -1281,46 +1342,15 @@
 
     function updateGridCharVisibility() {
       if (!gridCharData.length) return;
-      const bodies = physicsBodies();
-
-      const checks = bodies.map((body) => {
-        const safeR = safeZoneRadius(body);
-        const center = bodyCenter(body);
-        const angle = (body.angle || 0) * Math.PI / 180;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        if (body.kind === "word" && body.charOffsets) {
-          const charBoxes = body.charOffsets.map(({ startX, left, right, ascent, descent }) => ({
-            left: body.x + startX - left - safeR,
-            top: body.y - ascent - safeR,
-            right: body.x + startX + right + safeR,
-            bottom: body.y + descent + safeR
-          }));
-          return { charBoxes, center, cos, sin };
-        }
-        const box = bodyBox(body, safeR);
-        return { box, center, cos, sin };
-      });
-
+      updateSafeZoneMask();
+      const w = safeZoneMaskCanvas.width;
+      const h = safeZoneMaskCanvas.height;
+      const pixels = safeZoneMaskCtx.getImageData(0, 0, w, h).data;
       for (const char of gridCharData) {
-        let hidden = false;
-        for (const bc of checks) {
-          const dx = char.x - bc.center.x;
-          const dy = char.y - bc.center.y;
-          const lx = bc.center.x + bc.cos * dx + bc.sin * dy;
-          const ly = bc.center.y - bc.sin * dx + bc.cos * dy;
-          if (bc.charBoxes) {
-            for (const box of bc.charBoxes) {
-              if (lx >= box.left && lx <= box.right && ly >= box.top && ly <= box.bottom) {
-                hidden = true;
-                break;
-              }
-            }
-          } else if (lx >= bc.box.left && lx <= bc.box.right && ly >= bc.box.top && ly <= bc.box.bottom) {
-            hidden = true;
-          }
-          if (hidden) break;
-        }
+        const px = Math.round(char.x * SAFE_MASK_SCALE);
+        const py = Math.round(char.y * SAFE_MASK_SCALE);
+        const hidden = px >= 0 && py >= 0 && px < w && py < h
+          && pixels[(py * w + px) * 4 + 3] > 18;
         if (hidden !== char.hidden) {
           char.hidden = hidden;
           char.tspan.style.visibility = hidden ? "hidden" : "";
@@ -1843,6 +1873,7 @@
     document.addEventListener("pointerup", endDrag);
     document.addEventListener("pointercancel", endDrag);
     els.showSafeZone.addEventListener("change", updateBodyNodes);
+    els.showCollisionGap.addEventListener("change", updateBodyNodes);
     els.svgUpload.addEventListener("change", handleSvgUpload);
     els.resetWords.addEventListener("click", resetWords);
     els.exportSvg.addEventListener("click", exportSvg);
