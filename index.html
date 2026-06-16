@@ -1650,15 +1650,8 @@
       if (!collision) return;
       const { nx, ny, penetration } = collision;
 
-      const aIsAccent = accentBodies.includes(a);
-      const bIsAccent = accentBodies.includes(b);
-      // For word-vs-accent contacts treat the accent body as an immovable wall:
-      // the word bounces off fully while accent motion is driven only by magnetism/drag.
-      const wordAccentPair = aIsAccent !== bIsAccent;
-      const rawInvA = a.dragging ? 0 : 1 / a.mass;
-      const rawInvB = b.dragging ? 0 : 1 / b.mass;
-      const invA = (wordAccentPair && aIsAccent) ? 0 : rawInvA;
-      const invB = (wordAccentPair && bIsAccent) ? 0 : rawInvB;
+      const invA = a.dragging ? 0 : 1 / a.mass;
+      const invB = b.dragging ? 0 : 1 / b.mass;
       const invSum = invA + invB;
       if (invSum === 0) return;
 
@@ -1669,9 +1662,6 @@
       a.y -= ny * correctionMag * (invA / invSum);
       b.x += nx * correctionMag * (invB / invSum);
       b.y += ny * correctionMag * (invB / invSum);
-
-      // Between accent words: separate positions only, no velocity impulse (no bounce)
-      if (aIsAccent && bIsAccent) return;
 
       const relativeVx = (b.vx || 0) - (a.vx || 0);
       const relativeVy = (b.vy || 0) - (a.vy || 0);
@@ -1700,33 +1690,6 @@
       b.av -= impulse * invB * 0.04 * (ny || -nx);
       clampBodySpeed(a);
       clampBodySpeed(b);
-    }
-
-    function applyAccentAttraction(dt) {
-      if (accentBodies.length < 2) return;
-      const a = accentBodies[0];
-      const b = accentBodies[1];
-      const ac = bodyCenter(a);
-      const bc = bodyCenter(b);
-      const dx = bc.x - ac.x;
-      const dy = bc.y - ac.y;
-      const dist = Math.hypot(dx, dy) || 1;
-      const nx = dx / dist;
-      const ny = dy / dist;
-      // Spring pull: stronger when far, fades as they close
-      const pull = Math.min(dist * 0.6, 30) * dt;
-      if (!a.dragging) { a.vx += nx * pull; a.vy += ny * pull; }
-      if (!b.dragging) { b.vx -= nx * pull; b.vy -= ny * pull; }
-      // Soft velocity coupling so they drift in the same direction
-      const coupling = 0.06;
-      if (!a.dragging && !b.dragging) {
-        const dvx = b.vx - a.vx;
-        const dvy = b.vy - a.vy;
-        a.vx += dvx * coupling;
-        a.vy += dvy * coupling;
-        b.vx -= dvx * coupling;
-        b.vy -= dvy * coupling;
-      }
     }
 
     function applyFloat(word, dt) {
@@ -1776,8 +1739,6 @@
         applyFloat(word, dt);
         applyRotation(word, dt, now);
       });
-      applyAccentAttraction(dt);
-
       bodies.forEach((body) => {
         if (body.dragging) return;
         body.x += (body.vx || 0) * dt;
