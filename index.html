@@ -298,23 +298,7 @@
     }
 
     .main-text {
-      cursor: grab;
       user-select: none;
-    }
-
-    .main-text.dragging {
-      cursor: grabbing;
-    }
-
-    .hit-box,
-    .custom-hit {
-      fill: transparent;
-      cursor: grab;
-    }
-
-    .hit-box.dragging,
-    .custom-hit.dragging {
-      cursor: grabbing;
     }
 
     .custom-svg {
@@ -522,7 +506,6 @@
       <g id="collisionGapLayer"></g>
       <g id="safeZoneLayer"></g>
       <g id="edgePaddingLayer"></g>
-      <g id="hitLayer"></g>
     </svg>
   </main>
 
@@ -589,7 +572,6 @@
       safeZoneLayer: document.querySelector("#safeZoneLayer"),
       edgePaddingLayer: document.querySelector("#edgePaddingLayer"),
       mainLayer: document.querySelector("#mainLayer"),
-      hitLayer: document.querySelector("#hitLayer"),
       showEdgePadding: document.querySelector("#showEdgePadding"),
       showOuterPadding: document.querySelector("#showOuterPadding")
     };
@@ -643,7 +625,7 @@
     let localFontsRequested = false;
     let lastContainerWidth = 0;
     let lastContainerHeight = 0;
-    let activeBody = null;
+    let lastSaveTime = 0;
     let lastFrame = performance.now();
 
     function svgEl(name, attrs = {}) {
@@ -1144,7 +1126,6 @@
       const maxAngle = rotationMaxDegrees();
 
       clear(els.mainLayer);
-      clear(els.hitLayer);
 
       wordBodies = tokens.map((text, index) => {
         const size = fitSize(text, WORLD.width - edge * 2, Math.max(4, band * 0.82), targetSize);
@@ -1156,7 +1137,6 @@
         const y = existing ? existing.y : savedPos ? savedPos.py * WORLD.height : startPos ? startPos.py * WORLD.height : edge + band * index + band * 0.68 + metrics.ascent * 0.2;
         const mass = Math.max(1, (metrics.width * (metrics.ascent + metrics.descent)) / 95);
         const textNode = svgEl("text", { class: "main-text" });
-        const hitNode = svgEl("rect", { class: "hit-box" });
         const word = {
           kind: "word",
           text,
@@ -1174,19 +1154,11 @@
           metrics,
           charOffsets: computeCharOffsets(text, size),
           mass,
-          textNode,
-          hitNode,
-          dragging: false,
-          dragDx: 0,
-          dragDy: 0,
-          lastPointerTime: performance.now()
+          textNode
         };
 
         textNode.textContent = text;
-        hitNode.addEventListener("pointerdown", (event) => startDrag(event, word));
-        textNode.addEventListener("pointerdown", (event) => startDrag(event, word));
         els.mainLayer.appendChild(textNode);
-        els.hitLayer.appendChild(hitNode);
         return word;
       });
 
@@ -1197,11 +1169,9 @@
     }
 
     function renderCustomObjects() {
-      [...els.hitLayer.querySelectorAll(".custom-hit")].forEach((node) => node.remove());
       clear(els.customLayer);
       customObjects.forEach((customObject) => {
         els.customLayer.appendChild(customObject.imageNode);
-        els.hitLayer.appendChild(customObject.hitNode);
       });
     }
 
@@ -1355,15 +1325,6 @@
         word.textNode.setAttribute("font-weight", fontWeightValue());
         word.textNode.setAttribute("letter-spacing", letterSpacingValue().toFixed(3));
         word.textNode.setAttribute("transform", rotate);
-        word.textNode.classList.toggle("dragging", word.dragging);
-
-        word.hitNode.setAttribute("x", box.left.toFixed(3));
-        word.hitNode.setAttribute("y", box.top.toFixed(3));
-        word.hitNode.setAttribute("width", box.width.toFixed(3));
-        word.hitNode.setAttribute("height", box.height.toFixed(3));
-        word.hitNode.setAttribute("transform", rotate);
-        word.hitNode.classList.toggle("dragging", word.dragging);
-
       });
 
       customObjects.forEach((object) => {
@@ -1382,12 +1343,6 @@
           object.imageNode.setAttribute("height", object.height.toFixed(3));
           object.imageNode.setAttribute("transform", rotate);
         }
-        object.hitNode.setAttribute("x", object.x.toFixed(3));
-        object.hitNode.setAttribute("y", object.y.toFixed(3));
-        object.hitNode.setAttribute("width", object.width.toFixed(3));
-        object.hitNode.setAttribute("height", object.height.toFixed(3));
-        object.hitNode.setAttribute("transform", rotate);
-        object.hitNode.classList.toggle("dragging", object.dragging);
       });
       updateSafeZoneLayer();
       updateCollisionGapLayer();
@@ -1634,10 +1589,9 @@
       if (!collision) return;
       const { nx, ny, penetration } = collision;
 
-      const invA = a.dragging ? 0 : 1 / a.mass;
-      const invB = b.dragging ? 0 : 1 / b.mass;
+      const invA = 1 / a.mass;
+      const invB = 1 / b.mass;
       const invSum = invA + invB;
-      if (invSum === 0) return;
 
       const correction = penetration + 0.04;
       a.x -= nx * correction * (invA / invSum);
@@ -1648,20 +1602,12 @@
       const relativeVx = (b.vx || 0) - (a.vx || 0);
       const relativeVy = (b.vy || 0) - (a.vy || 0);
       const velocityAlongNormal = relativeVx * nx + relativeVy * ny;
-      const isDrivenContact = a.dragging || b.dragging;
-      if (velocityAlongNormal > 0 && !isDrivenContact) return;
+      if (velocityAlongNormal > 0) return;
 
       const bounce = numberValue(els.bounce) / 100;
       const closingSpeed = Math.max(0, -velocityAlongNormal);
-      const aVelocityN = (a.vx || 0) * nx + (a.vy || 0) * ny;
-      const bVelocityN = (b.vx || 0) * nx + (b.vy || 0) * ny;
-      const drivenSpeed = Math.max(
-        a.dragging ? aVelocityN : 0,
-        b.dragging ? -bVelocityN : 0,
-        0
-      );
-      const overlapBoost = isDrivenContact ? Math.min(26, penetration * 8) : Math.min(5, penetration * 1.5);
-      const hitSpeed = Math.max(closingSpeed, drivenSpeed, overlapBoost);
+      const overlapBoost = Math.min(5, penetration * 1.5);
+      const hitSpeed = Math.max(closingSpeed, overlapBoost);
       const impulse = ((1 + bounce) * hitSpeed + overlapBoost) / invSum;
       a.vx -= impulse * invA * nx;
       a.vy -= impulse * invA * ny;
@@ -1674,7 +1620,6 @@
     }
 
     function applyFloat(word, dt) {
-      if (word.dragging) return;
       const strength = numberValue(els.floatStrength);
       const targetSpeed = numberValue(els.floatSpeed);
       if (strength <= 0 || targetSpeed <= 0) return;
@@ -1722,7 +1667,6 @@
       });
 
       bodies.forEach((body) => {
-        if (body.dragging) return;
         body.x += (body.vx || 0) * dt;
         body.y += (body.vy || 0) * dt;
         body.vx = (body.vx || 0) * damping;
@@ -1741,45 +1685,6 @@
       }
     }
 
-    function pointerToWorld(event) {
-      const point = els.svg.createSVGPoint();
-      point.x = event.clientX;
-      point.y = event.clientY;
-      return point.matrixTransform(els.svg.getScreenCTM().inverse());
-    }
-
-    function startDrag(event, body) {
-      event.preventDefault();
-      event.stopPropagation();
-      const point = pointerToWorld(event);
-      activeBody = body;
-      body.dragging = true;
-      body.dragDx = point.x - body.x;
-      body.dragDy = point.y - body.y;
-      body.lastPointerTime = performance.now();
-      body.vx = 0;
-      body.vy = 0;
-      event.currentTarget.setPointerCapture(event.pointerId);
-      updateBodyNodes();
-    }
-
-    function moveDrag(event) {
-      if (!activeBody) return;
-      const point = pointerToWorld(event);
-      const now = performance.now();
-      const dt = Math.max(0.016, (now - activeBody.lastPointerTime) / 1000);
-      const nextX = point.x - activeBody.dragDx;
-      const nextY = point.y - activeBody.dragDy;
-      activeBody.vx = (nextX - activeBody.x) / dt;
-      activeBody.vy = (nextY - activeBody.y) / dt;
-      activeBody.x = nextX;
-      activeBody.y = nextY;
-      activeBody.lastPointerTime = now;
-      keepBodyInsideWorld(activeBody);
-      solvePhysics(0.016, now);
-      updateBodyNodes();
-    }
-
     function savePositions() {
       const words = {};
       wordBodies.forEach((w) => {
@@ -1791,14 +1696,6 @@
 
     function loadPositions() {
       try { return JSON.parse(localStorage.getItem("collisionPositions") || "null"); } catch { return null; }
-    }
-
-    function endDrag() {
-      if (!activeBody) return;
-      activeBody.dragging = false;
-      activeBody = null;
-      updateBodyNodes();
-      savePositions();
     }
 
     function resetWords() {
@@ -1836,18 +1733,11 @@
           angle: -2.5,
           av: 0,
           mass: 12,
-          dragging: false,
-          dragDx: 0,
-          dragDy: 0,
           imageNode: svgEl("image", {
             class: "custom-svg",
             href: reader.result
-          }),
-          hitNode: svgEl("rect", {
-            class: "custom-hit"
           })
         };
-        object.hitNode.addEventListener("pointerdown", (pointerEvent) => startDrag(pointerEvent, object));
         buildSvgMaskCanvas(reader.result, (mc) => { object.maskCanvas = mc; });
         customObjects = [object];
         renderCustomObjects();
@@ -1860,8 +1750,6 @@
     function exportSvg() {
       const clone = els.svg.cloneNode(true);
       clone.setAttribute("xmlns", SVG_NS);
-      const hitLayer = clone.querySelector("#hitLayer");
-      if (hitLayer) hitLayer.replaceChildren();
       const source = `<?xml version="1.0" encoding="UTF-8"?>\n${new XMLSerializer().serializeToString(clone)}`;
       const blob = new Blob([source], { type: "image/svg+xml" });
       const url = URL.createObjectURL(blob);
@@ -1884,7 +1772,6 @@
       clone.querySelector("#gridLayer")?.replaceChildren();
       clone.querySelector("#customLayer")?.replaceChildren();
       clone.querySelector("#mainLayer")?.replaceChildren();
-      clone.querySelector("#hitLayer")?.replaceChildren();
       clone.querySelector("#posterSvg")?.setAttribute("viewBox", "0 0 100 100");
       clone.querySelector("#paper")?.setAttribute("width", "100");
       clone.querySelector("#paper")?.setAttribute("height", "100");
@@ -1919,7 +1806,6 @@
       doc.getElementById("gridLayer")?.replaceChildren();
       doc.getElementById("customLayer")?.replaceChildren();
       doc.getElementById("mainLayer")?.replaceChildren();
-      doc.getElementById("hitLayer")?.replaceChildren();
       doc.getElementById("posterSvg")?.setAttribute("viewBox", "0 0 100 100");
       doc.getElementById("paper")?.setAttribute("width", "100");
       doc.getElementById("paper")?.setAttribute("height", "100");
@@ -2026,13 +1912,11 @@
       });
     });
 
-    document.addEventListener("pointermove", moveDrag);
-    document.addEventListener("pointerup", endDrag);
-    document.addEventListener("pointercancel", endDrag);
+    document.addEventListener("visibilitychange", () => { if (document.hidden) savePositions(); });
+    window.addEventListener("pagehide", savePositions);
     const showSvgsEl = document.querySelector("#showSvgs");
     function applySvgVisibility() {
       els.customLayer.style.display = showSvgsEl.checked ? "" : "none";
-      els.hitLayer.querySelectorAll(".custom-hit").forEach((n) => { n.style.pointerEvents = showSvgsEl.checked ? "" : "none"; });
     }
     showSvgsEl.addEventListener("change", applySvgVisibility);
     applySvgVisibility();
@@ -2122,12 +2006,9 @@
           height: objHeight,
           vx: 0, vy: 0, angle: 0, av: 0,
           mass: 12,
-          dragging: false, dragDx: 0, dragDy: 0,
-          imageNode: group,
-          hitNode: svgEl("rect", { class: "custom-hit" })
+          imageNode: group
         };
 
-        object.hitNode.addEventListener("pointerdown", (e) => startDrag(e, object));
         const svgBlob = new Blob([def.content], { type: "image/svg+xml" });
         const svgBlobUrl = URL.createObjectURL(svgBlob);
         buildSvgMaskCanvas(svgBlobUrl, (mc) => {
