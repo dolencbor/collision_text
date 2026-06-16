@@ -1730,6 +1730,7 @@
     }
 
     function resolveWordCollision(a, b) {
+      if (accentBodies.includes(a) && accentBodies.includes(b)) return;
       const collision = maskedCollision(a, b);
       if (!collision) return;
       const { nx, ny, penetration } = collision;
