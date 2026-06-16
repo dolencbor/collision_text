@@ -1739,11 +1739,13 @@
       const invSum = invA + invB;
       if (invSum === 0) return;
 
-      const correction = penetration + 0.04;
-      a.x -= nx * correction * (invA / invSum);
-      a.y -= ny * correction * (invA / invSum);
-      b.x += nx * correction * (invB / invSum);
-      b.y += ny * correction * (invB / invSum);
+      // Baumgarte-style slop: ignore tiny penetrations, correct only 45% of the remainder
+      const slop = 0.08;
+      const correctionMag = Math.max(0, penetration - slop) * 0.45;
+      a.x -= nx * correctionMag * (invA / invSum);
+      a.y -= ny * correctionMag * (invA / invSum);
+      b.x += nx * correctionMag * (invB / invSum);
+      b.y += ny * correctionMag * (invB / invSum);
 
       // Between accent words: separate positions only, no velocity impulse (no bounce)
       if (accentBodies.includes(a) && accentBodies.includes(b)) return;
@@ -1763,7 +1765,8 @@
         b.dragging ? -bVelocityN : 0,
         0
       );
-      const overlapBoost = isDrivenContact ? Math.min(26, penetration * 8) : Math.min(5, penetration * 1.5);
+      // Only boost velocity for significant overlaps to avoid jitter at rest contacts
+      const overlapBoost = isDrivenContact ? Math.min(26, penetration * 8) : Math.min(3, Math.max(0, penetration - slop) * 1.2);
       const hitSpeed = Math.max(closingSpeed, drivenSpeed, overlapBoost);
       const impulse = ((1 + bounce) * hitSpeed + overlapBoost) / invSum;
       a.vx -= impulse * invA * nx;
