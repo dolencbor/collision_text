@@ -1773,6 +1773,33 @@
       clampBodySpeed(b);
     }
 
+    function applyAccentAttraction(dt) {
+      if (accentBodies.length < 2) return;
+      const a = accentBodies[0];
+      const b = accentBodies[1];
+      const ac = bodyCenter(a);
+      const bc = bodyCenter(b);
+      const dx = bc.x - ac.x;
+      const dy = bc.y - ac.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const nx = dx / dist;
+      const ny = dy / dist;
+      // Spring pull: stronger when far, fades as they close
+      const pull = Math.min(dist * 0.6, 30) * dt;
+      if (!a.dragging) { a.vx += nx * pull; a.vy += ny * pull; }
+      if (!b.dragging) { b.vx -= nx * pull; b.vy -= ny * pull; }
+      // Soft velocity coupling so they drift in the same direction
+      const coupling = 0.06;
+      if (!a.dragging && !b.dragging) {
+        const dvx = b.vx - a.vx;
+        const dvy = b.vy - a.vy;
+        a.vx += dvx * coupling;
+        a.vy += dvy * coupling;
+        b.vx -= dvx * coupling;
+        b.vy -= dvy * coupling;
+      }
+    }
+
     function applyFloat(word, dt) {
       if (word.dragging) return;
       const strength = numberValue(els.floatStrength);
@@ -1820,6 +1847,7 @@
         applyFloat(word, dt);
         applyRotation(word, dt, now);
       });
+      applyAccentAttraction(dt);
 
       bodies.forEach((body) => {
         if (body.dragging) return;
