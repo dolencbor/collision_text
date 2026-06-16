@@ -1017,9 +1017,12 @@
           if (radius > 0) drawSpacedText(ctx, body.text, body.x, body.y, "strokeText");
           drawSpacedText(ctx, body.text, body.x, body.y, "fillText");
         } else {
-          // Match overlayRectNode: filled padded rectangle
+          // Match overlayRectNode exactly: rounded rect with rx = height/2 + pad
           const pad = radius;
-          ctx.fillRect(body.x - pad, body.y - pad, body.width + pad * 2, body.height + pad * 2);
+          const rx = body.height / 2 + pad;
+          ctx.beginPath();
+          ctx.roundRect(body.x - pad, body.y - pad, body.width + pad * 2, body.height + pad * 2, rx);
+          ctx.fill();
         }
         ctx.restore();
       });
