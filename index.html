@@ -993,16 +993,35 @@
     function updateSafeZoneMask() {
       const w = safeZoneMaskCanvas.width;
       const h = safeZoneMaskCanvas.height;
-      safeZoneMaskCtx.setTransform(1, 0, 0, 1, 0, 0);
-      safeZoneMaskCtx.clearRect(0, 0, w, h);
-      safeZoneMaskCtx.fillStyle = "rgba(255, 50, 80, 0.5)";
-      safeZoneMaskCtx.strokeStyle = "rgba(255, 50, 80, 0.5)";
-      safeZoneMaskCtx.lineJoin = "round";
-      safeZoneMaskCtx.lineCap = "round";
-      safeZoneMaskCtx.miterLimit = 2;
-      safeZoneMaskCtx.textBaseline = "alphabetic";
+      const ctx = safeZoneMaskCtx;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.strokeStyle = "#fff";
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.miterLimit = 2;
+      ctx.textBaseline = "alphabetic";
       physicsBodies().forEach((body) => {
-        drawBodyMask(safeZoneMaskCtx, body, safeZoneRadius(body), SAFE_MASK_SCALE, 0, 0);
+        const radius = safeZoneRadius(body);
+        const center = bodyCenter(body);
+        ctx.save();
+        ctx.setTransform(SAFE_MASK_SCALE, 0, 0, SAFE_MASK_SCALE, 0, 0);
+        ctx.translate(center.x, center.y);
+        ctx.rotate((body.angle || 0) * Math.PI / 180);
+        ctx.translate(-center.x, -center.y);
+        if (body.kind === "word") {
+          // Match overlayTextNode: text shape + stroke of radius on each side
+          ctx.lineWidth = radius * 2;
+          ctx.font = font(body.size);
+          if (radius > 0) drawSpacedText(ctx, body.text, body.x, body.y, "strokeText");
+          drawSpacedText(ctx, body.text, body.x, body.y, "fillText");
+        } else {
+          // Match overlayRectNode: filled padded rectangle
+          const pad = radius;
+          ctx.fillRect(body.x - pad, body.y - pad, body.width + pad * 2, body.height + pad * 2);
+        }
+        ctx.restore();
       });
     }
 
