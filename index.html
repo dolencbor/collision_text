@@ -1735,9 +1735,9 @@
       const damping = Math.exp(-numberValue(els.friction) * dt);
       const bodies = physicsBodies();
 
-      wordBodies.concat(accentBodies).forEach((word) => {
-        applyFloat(word, dt);
-        applyRotation(word, dt, now);
+      bodies.forEach((body) => {
+        applyFloat(body, dt);
+        applyRotation(body, dt, now);
       });
       bodies.forEach((body) => {
         if (body.dragging) return;
