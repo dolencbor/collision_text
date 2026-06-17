@@ -76,7 +76,6 @@
     .custom-hit {
       fill: transparent;
       cursor: grab;
-      touch-action: none;
     }
 
     .hit-box.dragging,
@@ -1107,6 +1106,7 @@
     }
 
     function startDrag(event, body) {
+      if (event.pointerType === 'touch') return;
       event.preventDefault();
       event.stopPropagation();
       const point = pointerToWorld(event);
